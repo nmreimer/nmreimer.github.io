@@ -1,9 +1,11 @@
 ---
 title: "About"
+about:
+  id: intro-heading
+  template: trestles
+  links:
+    - icon: github
+      href: https://github.com/nmreimer
 ---
 
-About this site
 
-```{r}
-1 + 1
-```
