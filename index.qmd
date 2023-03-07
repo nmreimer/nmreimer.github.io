@@ -1,5 +1,5 @@
 ---
-title: "nmreimer.github.io"
+title: "Nathaniel Reimer"
 ---
 
 This is a Quarto website.
