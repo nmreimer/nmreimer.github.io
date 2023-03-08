@@ -1,0 +1,333 @@
+---
+title: "Asteroid Value Analysis"
+description: "Visualization and Analysis of Asterank data"
+date: "2022-12-14"
+image: KISSconcept.png
+image-alt: concept art of spacecraft and asteroid
+categories:
+  - Data Science
+  - Space
+about:
+  template: marquee
+  image: KISSconcept.png
+---
+
+A report that visualizes the location, size, composition, and value of asteroids in the [Asterank](https://www.asterank.com/) dataset. Created in collaboration with Aaliyah Dick and Courtney Brown.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE) # I changed this to False
+```
+```{r packages, echo=FALSE,message=FALSE}
+library(dplyr)
+#library("jsonlite") no longer used
+library(stringr) 
+library(tibble)
+library(lubridate) # I don't think used anymore
+library(ggplot2)
+library(scales)
+library(ggpubr)
+library("patchwork")
+library(png)
+library(tidyr)
+library(plotly)
+# 
+# astershiny <- read.csv("astershiny.csv")
+```
+
+
+## Background
+
+After the Moon Landing in 1969, interest in the universe beyond Earth surged and one of many questions raised was that of asteroid mining. NASA’s Jet Propulsion Laboratory maintains a database called the Small Bodies Database (SBDB) containing a record of small Solar System bodies, which includes any celestial body in our Solar System other than planets and natural satellites (e.g. moons). In 2012, a new database called Asterank was created using the SBDB, among other sources. New variables include the spectral type, value, and profit of each asteroid, which are critical for mining. Most of the following analysis is based on a subset of only asteroids with defined spectral types in Asterank's data.
+
+## Definitions and Setup
+
+### Asteroid
+
+  Asteroids are small rocky, metallic, or icy bodies with no atmosphere orbiting the Sun.
+  
+### AU
+
+  An Astronomical Unit (AU) is a unit of length roughly equal to the distance from the Earth to the Sun and is about 150 million kilometers (93 million miles).
+  
+### Composition
+
+  Asteroids fall into 3 different composition classes: C-type, S-type, and M-type. C-type, or chondrite, asteroids are the most common and consist of clay and silicate rocks. S-type, or "stony", asteroids are made of silicate materials and nickel-iron. M-type, or metallic, asteroids have varied composition depending on how far from the Sun they formed. Composition can be estimated using spectral data.
+  
+### Spectral Type
+
+#### Variable Name: spec_B
+
+  Asteroids are typed based on their emission spectrum, albedo, and color. See https://en.wikipedia.org/wiki/Asteroid_spectral_types for list of spectral types. Essentially, this is based on how objects reflect and absorb different wavelengths of light.
+
+### Delta-v
+
+#### Variable Name: dv
+
+  Delta-v is used to calculate the accessibility, with lower values indicating easier access. Delta-v is, more specifically, the change in velocity (measured in km/s) required of mining spacecraft in order to make contact with the asteroid. Most NEAs require a delta-v around 6-8 km/s and very few asteroids have a delta-v smaller than 4 km/s.
+  
+### Main Belt
+
+  The main belt, also called the asteroid belt or main asteroid belt, is located between Mars and Jupiter contains many of the asteroids in the Solar System, second only to the Kuiper Belt. It is believed that the main belt have been a planet if not for the gravitational pull of Jupiter in the early Solar System.
+
+### MOID  
+
+#### Variable Name: moid
+
+  Minimum orbit intersection distance, or MOID, is used to assess potential close approaches and collision risks of astronomical objects. A smaller MOID value, and thus a smaller minimum distance, indicates a higher level of risk (but NOT inevitability). MOID is often measured in AU (defined below) or ld (the distance between the moon an Earth).
+  
+### NEAs
+
+  NEA is an abbreviation of Near-Earth Asteroid (q < 1.3 AU). There are four groups of NEAs (Atira, Aten, Apollo, & Amor) based on perihelion distance (q), aphelion distance (Q) and their semi-major axes (a).
+  
+### Perihelion
+
+#### Variable Name: q (AU)
+
+  The perihelion is the point in orbit closest to the sun.
+  
+### PHAs
+
+  PHA is an abbreviation of Potentially Hazardous Asteroid. These are asteroids that have been determined to be at risk of making a threatening approach to the Earth, more specifically asteroids with MOID ≤ 0.05 AU and H ≤ 22.0.
+  
+  
+### SPK-ID
+
+  The SPK-ID of an asteroid is its identifier in the JPL Small Body Database.
+
+### How Asterank Calculates Value and Profit
+
+We need to understand how Asterank estimates price and profit before we can do any analysis.   
+Since Asterank's code is available publicly on github we can analyze exactly how it arrives at its predictions for value and profit. Asterank first assigns composition estimates to asteroids based on their spectral type. For example, a type Cg asteroid is .2% water and .166% iron (and other elements). It then uses either estimates of mass in existing literature or estimates of diameter to calculate how much of each element is in each asteroid by weight. Mapping these to material values in \$/kg, Asterank calculates the total value for each asteroid. Using calculated delta-v values Asterank estimate the cost of getting to an asteroid and bringing it back to lunar orbit. Profit is calculated with price and cost.
+
+Side note: Objects would be placed in lunar orbit so that there would be no chance of them impacting Earth.
+
+The final value is a product of estimates on estimates on estimates. For the most part, We only have calculated values for asteroids with spectral data. These account for around 5,200 of the nearly 800,000 objects in Asterank's data. And only 996 have a price greater than 1 cent. Aside from simply unavailable spectral data the biggest issue is estimating composition. There have only been a couple of successful asteroid sample return missions and even less is known about the interior of these objects, not to mention the composition variation from asteroid to asteroid that Asterank cannot account for. 
+
+```{r data read and clean, message=FALSE}
+# asterankfull <- read.csv("asterankfull.csv")
+# 
+# cleaner <- function(dataset) {
+#   out <- dataset %>%
+#     mutate(spec_B = str_replace(spec_B,"^$",NA_character_)) %>%
+#     mutate(spec_T = str_replace(spec_T,"^$",NA_character_)) %>%
+#     filter(!is.na(spec_B)) %>%
+#     filter(!is.na(spec_T)) %>%
+#     select(full_name,name,id,spkid,orbit_id,class,neo,pha,price,profit,spec_B,spec_T,dv,a,q,e,i,H,moid,moid_ld,moid_jup,BV,UB,IR,epoch,epoch_cal,epoch_mjd,om,n,est_diameter,rms,closeness,per,equinox,albedo,score,tp,n_obs_used,ma,pdes,ad,diameter)
+#   return(out)
+# }
+# 
+# 
+# asterankfull <- cleaner(asterankfull)
+# astershiny <- astershiny %>% left_join(asterankfull)
+# 
+# write.csv(astershiny,file = "astershiny.csv")
+
+astershiny <- read.csv("astershiny.csv")
+```
+## Analysis
+
+### Locating Value and Profit
+
+```{r boxplot data cleaning, echo=FALSE}
+astershinyfilt <- astershiny %>% filter(price > 1) %>% mutate(q2 = cut(q,breaks=seq(0,5.5,by=.25))) %>% filter(!is.na(q2)) %>% group_by(q2) %>% mutate(medprice = median(price)) %>% ungroup() %>% mutate(cost = price - profit)
+```
+
+```{r log boxplot-price,echo=FALSE}
+#| fig-width: 12
+#| fig-height: 6
+#| column: page
+
+
+Point <- astershinyfilt %>%
+  ggplot() +
+    geom_boxplot(aes(y=price,x=q2,fill=medprice),outlier.alpha = .25,show.legend = FALSE) +
+    scale_y_continuous(trans = log10_trans(), 
+                       breaks = 10^seq(4,18,by=2),
+                       labels = c("Ten Thousand","One Million","One Hundred Million","Ten Billion","One Trillion","One Hundred Trillion","Ten Quadrillion","One Quintillion")) +
+    annotation_logticks(sides="l") +
+    scale_fill_gradient(limits=c(10^10,10^17),trans="log10") +
+    labs(title = "Locating High-value Asteroids",y="Estimated Value ($)",x="") +
+    theme_light()
+
+
+Density <- astershinyfilt %>%
+ggplot() + geom_density(aes(x=q)) + theme_bw() + labs(x="Closest Point to Sun (AU)",caption = "Most asteroids, and the highest value asteroids are located in the asteroid belt.",y="Asteroid Distribution")
+
+
+plot<-ggarrange(Point, Density, 
+          ncol = 1, nrow = 2, align = 'v',heights = c(1,.2))
+
+earth <- readPNG("icons/earth.png",native = TRUE)
+mars <- readPNG("icons/mars.png",native = TRUE)
+jupiter <- readPNG("icons/jupiter.png",native = TRUE)
+
+iconplot <- plot +
+  inset_element(earth, left = 0.29, bottom = 0.25, right = 0.36, top = 0.3) +
+  inset_element(mars, left = 0.395, bottom = 0.25, right = 0.445, top = 0.3) +
+  inset_element(jupiter, left = 0.945, bottom = 0.25, right = 0.995, top = 0.3)
+
+print(iconplot)
+```
+
+
+
+```{r, echo=FALSE}
+#median = median(asterankfull$e)
+```
+
+Let's start by taking a look at where in the solar system asteroids are along with their value. The many parameters needed to define an objects orbit in the solar system make visualizing location complex. We simplify this by defining location as the distance to the sun when the object is closest to the sun. This is called the perihelion and is measured in Astronomical units (AU) where 1 AU is the approximate distance from the earth to the sun. An object with a highly elliptical orbit which passes though Earth's orbit at its closest point and Jupiter's orbit at its furthest point would appear on this plot at Earth. For these highly elliptical objects this visualization clearly does not work well. The eccentricity of an orbit is a measure of how elliptical the orbit is. Lower eccentricities indicate a more circular orbit. High eccentricity in an orbit means that there is a wider range (a.k.a. less consistency) of distance between the asteroid and the Sun. For reference, Earth has an eccentricity of 0.016 and Pluto has an eccentricity of 0.25. The median eccentricity of objects in the full Asterank data is 0.1504736. So it is probably okay just to use the closest point to the sun for our purposes but a more scientific approach would need more orbit parameters.   
+
+Asteroids in our data are the most dense just past the orbit of Mars before Jupiter. This area is the asteroid belt. Asteroids that travel closer to the sun than Mars does have typical values less than one hundred trillion and often less than one trillion (note that the y-axis has been log transformed). In the asteroid belt and beyond, asteroids have calculated values far beyond one trillion, going into quadrillions and quintillions. The asteroids in these regions of space are orders of magnitude apart in terms of price. The size of this difference allows us to be confident in the relationship even if Asterank's predictions are not exceedingly accurate.   
+
+```{r}
+#| column: page
+asteroid2<- astershiny %>%
+select(spec_B, profit, moid_ld)%>%
+group_by(spec_B)%>%
+mutate(avgpp=round(profit/1000000000))%>%
+arrange(desc(avgpp)) %>%
+mutate(text = paste("SpectralType: ", spec_B,"Profit: ", avgpp, "Collision space: ", moid_ld, sep=", ")) %>%
+ggplot(aes(y=avgpp, x=moid_ld, text=text))+
+  geom_point(alpha=0.7,aes(fill=spec_B, size=profit), color="white", pch=21)+
+  labs(title = "Average profit based on MOID and spectral type", 
+       caption = "Also shows realtionship between MOID and profit.", 
+       x = "Distance from Earth (MOID in ld)", y = "Profit") + 
+  theme(panel.background = element_rect(fill="black"),panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  theme(plot.background = element_rect(color="black"))
+
+asteroid3<-ggplotly(asteroid2, tooltip="text")
+asteroid3
+```
+
+Looking at individual asteroids with spectral type we see that high profit asteroids tend to be type C and not very close to earth. There are a number of lower profit X type asteroids closer to Earth. 
+
+So, price is not everything, it costs an incredible amount to get to asteroids and bring them back to earth. Just because an asteroid has a high value does not mean it will be profitable or feasible to mine. 
+
+### Delta-V and Accessibility
+
+One priority in determining asteroid profit is the ease of access. Delta-v (Δv) is used to calculate the accessibility, with lower values indicating easier access. Specifically, Δv is the change in velocity (measured in km/s) required of mining spacecraft in order to make contact with the asteroid. But we cannot decide what to mine based on Δv alone. The asteroids named “2018 AV2” and “2009 HC82”, for example, have the smallest and largest Δvs in the dataset (3.74 and 51.19 km/s respectively) but have estimated prices of $0.  
+
+```{r delta-v density, echo=FALSE}
+#| column: page
+#| fig-width: 12
+#| fig-height: 6
+ggplot(astershiny %>% filter(dv != "NA"), aes(x = dv)) +
+  geom_density(alpha = .5) +
+  labs(title = "Accessibility (Δv) of Asteroids for Mining", subtitle = "Asteroids with Δv higher than 30 km/s removed", x = "Δv (km/s)") +
+  xlim(0,30) +
+  guides(color="none") +
+  theme_light()
+```
+```{r diameter density, echo=FALSE, message=FALSE, warning=FALSE}
+#| column: page
+#| fig-width: 12
+#| fig-height: 6
+ggplot(astershiny %>% filter(diameter != "NA"), aes(x = diameter)) +
+  geom_density(alpha = .5) +
+  labs(title = "Asteroid Diameter for Mining", subtitle = "Asteroids with diameter greater than 250km excluded", x = "Diameter (km)") +
+  xlim(0,250) +
+  guides(color="none") + 
+  geom_vline(xintercept=.007,color="red") + 
+  theme_light() 
+```
+
+The asteroids in this data subset are massive. In 2012 scientists from NASA and a variety of educational institutions wrote a report on the feasibility of asteroid retrieval. They came up with a plan using current technology and technology in development to bring a 7-meter, 500 ton asteroid into lunar orbit. They estimated the cost at more than 2 billion dollars. In the plot above a red line is placed at 7 meters. None of the asteroids in the subset of data we are working with that have defined diameters fall below this line. It is not currently feasible to bring any of them to the moon.
+
+```{r echo=FALSE, out.width = "50%", fig.align = "center"}
+knitr::include_graphics("KISSconcept.png")
+```
+
+This paper did identify several potential candidates for capture and return. And, for NASA, the real profitability is in science and having access to materials in space. 500 tons of asteroid are 500 tons of material that do not need to be launched into space with expensive rockets.
+
+
+
+```{r log boxplot-profit, fig.width=12,fig.height=6, echo=FALSE}
+#| column: page
+Point2 <- astershinyfilt %>%
+  ggplot() +
+    geom_boxplot(aes(y=profit,x=q2,fill=medprice),outlier.alpha = .25,show.legend = FALSE) +
+    scale_y_continuous(trans = log10_trans(), 
+                       breaks = 10^seq(4,18,by=2),
+                       labels = c("Ten Thousand","One Million","One Hundred Million","Ten Billion","One Trillion","One Hundred Trillion","Ten Quadrillion","One Quintillion")) +
+    annotation_logticks(sides="l") +
+    scale_fill_gradient(limits=c(10^10,10^17),trans="log10") +
+    labs(title = "Locating High-value Asteroids",y="Estimated Profit ($)",x="") +
+    theme_light()
+
+
+Density <- astershinyfilt %>%
+ggplot() + geom_density(aes(x=q)) + theme_bw() + labs(x="Closest Point to Sun (AU)",caption = "Most asteroids, and the highest value asteroids are located in the asteroid belt.",y="Asteroid Distribution")
+
+
+plot<-ggarrange(Point2, Density, 
+          ncol = 1, nrow = 2, align = 'v',heights = c(1,.2))
+
+earth <- readPNG("icons/earth.png",native = TRUE)
+mars <- readPNG("icons/mars.png",native = TRUE)
+jupiter <- readPNG("icons/jupiter.png",native = TRUE)
+
+iconplot2 <- plot +
+  inset_element(earth, left = 0.29, bottom = 0.25, right = 0.36, top = 0.3) +
+  inset_element(mars, left = 0.395, bottom = 0.25, right = 0.445, top = 0.3) +
+  inset_element(jupiter, left = 0.945, bottom = 0.25, right = 0.995, top = 0.3)
+
+print(iconplot2)
+```
+
+```{r, eval=FALSE,echo=FALSE}
+astershiny %>% mutate(cost = price - profit) %>% mutate(margin = (profit/price)*100) %>% mutate(costper = cost/price) %>% select(price,profit,cost,margin,costper) %>% summary()
+```
+
+
+Asterank still sees these asteroids as quite profitable, if not currently feasible. The graph of estimated profit is strikingly similar to the graph of price. Even considering the higher cost of getting to the main belt it is still worthwhile. Expenses are considerable though, while the profit plot has a similar shape it is shifted down considerably. For the median asteroid in our data, expenses eat up 92% of the asteroids value.  
+
+All of this is hypothetical. There is not country or company that has or is about to capture, return, and mine an asteroid. And certainly not any of the large, high value asteroids in the main belt. Estimates for price and composition are just estimates and more research is needed to clarify them. Right now the focus is on gathering information on asteroids and Asterank is a great tool for generating interest and support for that research.  
+Notably, NASA's OSIRIS-REx mission is on track to return an asteroid sample to Earth in 2023. This, like meteorite composition studies, can be used to better link spectral and composition data.
+
+
+## Resources
+
+[Asterank](https://www.asterank.com/)
+
+[Asteroids - Wikipedia](https://en.wikipedia.org/wiki/Asteroid)
+
+[Basic Asteroid Info - NASA](https://solarsystem.nasa.gov/asteroids-comets-and-meteors/asteroids/in-depth/)
+
+[Object Classifications - Planetary Data System ](https://pdssbn.astro.umd.edu/data_other/objclass.shtml)
+
+[Spectral Types - Wikipedia](https://en.wikipedia.org/wiki/Asteroid_spectral_types)
+
+[Asteroid Retrieval Feasibility Study](https://kiss.caltech.edu/final_reports/Asteroid_final_report.pdf)
+
+[OSIRIS-REx](https://www.nasa.gov/feature/goddard/2022/1st-nasa-asteroid-sample-return-mission-on-track-for-fall-23-delivery)
+
+
+## Appendix
+
+```{r, log boxplot-combined, fig.width=12,fig.height=6,eval=TRUE}
+#| column: page
+both<-astershinyfilt %>% pivot_longer(cols = c(profit,price),names_to = "Account",values_to = "Value") %>%
+  ggplot() +
+    geom_boxplot(aes(y=Value,x=q2,fill=Account),outlier.alpha = .25,show.legend = FALSE) +
+    scale_y_continuous(trans = log10_trans(), 
+                       breaks = 10^seq(4,18,by=2),
+                       labels = c("Ten Thousand","One Million","One Hundred Million","Ten Billion","One Trillion","One Hundred Trillion","Ten Quadrillion","One Quintillion")) +
+    annotation_logticks(sides="l") +
+    labs(title = "Comparing Price and Profit",y="Estimated Price and Profit ($)",x="") +
+    theme_light()
+
+plot<-ggarrange(both, Density, 
+          ncol = 1, nrow = 2, align = 'v',heights = c(1,.2))
+
+earth <- readPNG("icons/earth.png",native = TRUE)
+mars <- readPNG("icons/mars.png",native = TRUE)
+jupiter <- readPNG("icons/jupiter.png",native = TRUE)
+
+iconplot3 <- plot +
+  inset_element(earth, left = 0.29, bottom = 0.25, right = 0.36, top = 0.3) +
+  inset_element(mars, left = 0.395, bottom = 0.25, right = 0.445, top = 0.3) +
+  inset_element(jupiter, left = 0.945, bottom = 0.25, right = 0.995, top = 0.3)
+
+print(iconplot3)
+```
+
