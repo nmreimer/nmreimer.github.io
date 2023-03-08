@@ -9,6 +9,7 @@ website:
       - href: index.qmd
         text: Home
       - about.qmd
+      - projects.qmd
   page-footer:
     left: | 
       &copy; Nathaniel Reimer, 2023<br>

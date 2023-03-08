@@ -4,5 +4,14 @@
   },
   "about.qmd": {
     "about.html": "d904de28"
+  },
+  "projects/asteroids/index.qmd": {
+    "index.html": "312e1e69"
+  },
+  "projects.qmd": {
+    "projects.html": "07912a2e"
+  },
+  "projects/asteroids/report.qmd": {
+    "report.html": "4b1d1f3a"
   }
 }
