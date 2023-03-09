@@ -3,12 +3,11 @@ project:
   output-dir: docs
 
 website:
-  title: "nmreimer.github.io"
+  title: "Nathaniel Reimer"
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
       - projects.qmd
   page-footer:
     left: | 

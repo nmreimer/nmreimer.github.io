@@ -1,12 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Nathaniel Reimer",
-    "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
-  },
-  {
     "objectID": "projects/asteroids/index.html",
     "href": "projects/asteroids/index.html",
     "title": "Asteroid Value Analysis",
@@ -56,9 +49,9 @@
     "text": "Order By\n       Default\n         \n          Title\n        \n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\n\n\n\n\n\nAsteroid Value Analysis\n\n\n\nData Science\n\n\nSpace\n\n\n\nVisualization and Analysis of Asterank data\n\n\n\n\n\n\nDec 14, 2022\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About Me",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Nathaniel Reimer",
     "section": "",
     "text": "he/him/his\nStudent @ Macalester College\n\n\nMacalester College in St. Paul MN  Major Data Science, Minor in Economics | Sept 2020 - May 2024"
   }
