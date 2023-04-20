@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Nathaniel Reimer",
+    "section": "",
+    "text": "he/him/his\nStudent @ Macalester College\n\n\nMacalester College in St. Paul MN  Major Data Science, Minor in Economics | Sept 2020 - May 2024"
+  },
+  {
     "objectID": "projects/asteroids/index.html",
     "href": "projects/asteroids/index.html",
     "title": "Asteroid Value Analysis",
@@ -42,24 +49,17 @@
     "text": "Appendix"
   },
   {
-    "objectID": "projects.html",
-    "href": "projects.html",
-    "title": "Projects",
-    "section": "",
-    "text": "Order By\n       Default\n         \n          Title\n        \n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\n\n\n\n\n\nDoubly Robust Estimators\n\n\n\nData Science\n\n\nStatistics\n\n\n\nAn Exploration of a Double Robust Estimator for Causal Inference\n\n\n\n\n\n\nApr 17, 2023\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAsteroid Value Analysis\n\n\n\nData Science\n\n\nSpace\n\n\n\nVisualization and Analysis of Asterank data\n\n\n\n\n\n\nDec 14, 2022\n\n\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Nathaniel Reimer",
-    "section": "",
-    "text": "he/him/his\nStudent @ Macalester College\n\n\nMacalester College in St. Paul MN  Major Data Science, Minor in Economics | Sept 2020 - May 2024"
-  },
-  {
     "objectID": "projects/doublerobust/index.html",
     "href": "projects/doublerobust/index.html",
     "title": "Doubly Robust Estimators",
     "section": "",
     "text": "Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. On the face of it the logic does not make sense. Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. This is the causal diagram for our simulated data1:\n\n\n\n\n\nWhere Y is the outcome and A is a binary treatment.\n\n\n\n\nThe naive researcher uses uses thorough research and input from experts to come up with two models:\n\nThe outcome is affected by the treatment, Z, W, and M.\nY ~ A + Z + W + M\nThe treatment an individual is assigned to is affected by X.\nA ~ X\n\n\n\n\nFootnotes\n\n\nGay Sex↩︎"
+  },
+  {
+    "objectID": "projects.html",
+    "href": "projects.html",
+    "title": "Projects",
+    "section": "",
+    "text": "Order By\n       Default\n         \n          Title\n        \n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\n\n\n\n\n\nDoubly Robust Estimators\n\n\n\nData Science\n\n\nStatistics\n\n\n\nAn Exploration of a Double Robust Estimator for Causal Inference\n\n\n\n\n\n\nApr 17, 2023\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAsteroid Value Analysis\n\n\n\nData Science\n\n\nSpace\n\n\n\nVisualization and Analysis of Asterank data\n\n\n\n\n\n\nDec 14, 2022\n\n\n\n\n\n\n\n\nNo matching items"
   }
 ]
