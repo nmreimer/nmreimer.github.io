@@ -10,6 +10,8 @@ categories:
 about:
   template: marquee
   image: KISSconcept.png
+execute:
+  freeze: auto
 ---
 
 A report that visualizes the location, size, composition, and value of asteroids in the [Asterank](https://www.asterank.com/) dataset. Created in collaboration with Aaliyah Dick and Courtney Brown.

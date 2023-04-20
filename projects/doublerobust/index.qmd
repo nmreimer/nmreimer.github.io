@@ -8,6 +8,8 @@ categories:
   - Statistics
 about:
   template: marquee
+execute:
+  freeze: auto
 ---
 
 ```{r setup, include=FALSE}
