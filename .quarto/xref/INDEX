@@ -13,5 +13,8 @@
   },
   "projects/asteroids/report.qmd": {
     "report.html": "4b1d1f3a"
+  },
+  "projects/doublerobust/index.qmd": {
+    "index.html": "2913b8f5"
   }
 }
