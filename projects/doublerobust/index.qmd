@@ -1,0 +1,65 @@
+---
+title: "Doubly Robust Estimators"
+description: "An Exploration of a Double Robust Estimator for Causal Inference"
+date: "2023-04-17"
+
+categories:
+  - Data Science
+  - Statistics
+about:
+  template: marquee
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r packages, echo=FALSE,message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(dagitty)
+library(ggdag)
+```
+
+Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. On the face of it the logic does not make sense. Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. This is the causal diagram for our simulated data[^1]:
+
+[^1]: Gay Sex
+
+```{r daggity}
+#| fig-alt: "A causal graph with arrows from W, M, Z, and A to the outcome Y; an arrow from W to X; arrows from X and Z to A; and an arrow from A to M"
+#| fig-cap: "Where Y is the outcome and A is a binary treatment."
+
+dag <- dagitty('dag { bb="0,0,1,1"
+A [exposure,pos="0.1,0.5"]
+M [pos="0.5,0.4"]
+W [pos="0.9,0.35"]
+X [pos="0.1,0.35"]
+Y [outcome,pos="0.9,0.5"]
+Z [pos="0.5,0.6"]
+A -> M
+A -> Y
+M -> Y
+W -> X
+W -> Y
+X -> A
+Z -> A
+Z -> Y
+}')
+
+
+ggdag(dag)  +
+  theme_dag_blank() +
+  geom_dag_point(color = "lightblue1") +
+  geom_dag_text(color = "black")
+  
+```
+
+The naive researcher uses uses thorough research and input from experts to come up with two models:
+
+1.  The outcome is affected by the treatment, Z, W, and M.
+
+    Y \~ A + Z + W + M
+
+2.  The treatment an individual is assigned to is affected by X.
+
+    A \~ X
