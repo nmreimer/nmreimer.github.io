@@ -23,7 +23,7 @@ library(ggdag)
 
 Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. On the face of it the logic does not make sense. Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. This is the causal diagram for our simulated data[^1]:
 
-[^1]: Gay Sex
+[^1]: thing
 
 ```{r daggity}
 #| fig-alt: "A causal graph with arrows from W, M, Z, and A to the outcome Y; an arrow from W to X; arrows from X and Z to A; and an arrow from A to M"
