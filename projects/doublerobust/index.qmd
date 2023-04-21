@@ -204,7 +204,7 @@ Our researcher, sees that if they have a correct outcome model then $Y_i A_i = \
 
 ```{r}
 part_estimates_1 <- t(get_dr_parts2_3(data, Y ~ A + Z + W + M, A ~ X))
-rownames(part_estimates_1) <- c("Outcome Formula", "Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "$\\frac{1}{n}\\sum \\frac{Y_i A_i}{\\hat{e}(\\textrm{covariates}_i)}$", "$-\\frac{1}{n}\\sum \\frac{\\hat{y}(\\textrm{covariates}_i)*A_i}{\\hat{e}(\\textrm{covariates}_i)}$","Difference")
+rownames(part_estimates_1) <- c("Outcome Formula", "Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "$\\frac{1}{n}\\sum \\frac{Y_i A_i}{\\hat{e}(\\textrm{covariates}_i)}$", "$\\frac{1}{n}\\sum \\frac{\\hat{y}(\\textrm{covariates}_i)*A_i}{\\hat{e}(\\textrm{covariates}_i)}$","Difference")
 knitr::kable(part_estimates_1, escape = FALSE, caption = "It does!")
 ```
 
