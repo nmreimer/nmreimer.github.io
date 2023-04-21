@@ -1,5 +1,26 @@
 [
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Nathaniel Reimer",
+    "section": "",
+    "text": "he/him/his\nStudent @ Macalester College\n\n\nMacalester College in St. Paul MN  Major Data Science, Minor in Economics | Sept 2020 - May 2024"
+  },
+  {
+    "objectID": "projects/californiaedu/index.html",
+    "href": "projects/californiaedu/index.html",
+    "title": "Beyond the Report Card: Investigating the Factors that Define Educational Achievement",
+    "section": "",
+    "text": "Estimate Std. Error  t value     Pr(>|t|)\n(Intercept)        11365.441   184.1742 61.71027 0.000000e+00\nas.numeric(perfrl)  3170.302   283.2011 11.19452 1.334886e-28"
+  },
+  {
+    "objectID": "projects/californiaedu/narrative.knit.html",
+    "href": "projects/californiaedu/narrative.knit.html",
+    "title": "Beyond the Report Card: Investigating the Factors that Define Educational Achievement",
+    "section": "",
+    "text": "Estimate Std. Error  t value     Pr(>|t|)\n(Intercept)        11365.441   184.1742 61.71027 0.000000e+00\nas.numeric(perfrl)  3170.302   283.2011 11.19452 1.334886e-28"
+  },
+  {
     "objectID": "projects/asteroids/index.html",
     "href": "projects/asteroids/index.html",
     "title": "Asteroid Value Analysis",
@@ -46,27 +67,27 @@
     "href": "projects/doublerobust/index.html",
     "title": "Doubly Robust Estimators",
     "section": "",
-    "text": "Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. On the face of it the logic does not make sense. Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. This is the causal diagram for our simulated data1:\n\n\n\n\n\nWhere Y is the outcome and A is a binary treatment.\n\n\n\n\nThe naive researcher uses uses thorough research and input from experts to come up with two models:\n\nThe outcome is affected by the treatment, Z, W, and M.\nY ~ A + Z + W + M\nThe treatment an individual is assigned to is affected by X.\nA ~ X\n\n\n\n\nFootnotes\n\n\nthing↩︎"
+    "text": "Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. On the face of it the logic does not make sense. Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. This is the causal diagram for our simulated data:"
   },
   {
-    "objectID": "projects/californiaedu/narrative.html",
-    "href": "projects/californiaedu/narrative.html",
-    "title": "Beyond the Report Card: Investigating the Factors that Define Educational Achievement",
-    "section": "",
-    "text": "Estimate Std. Error  t value     Pr(>|t|)\n(Intercept)        11365.441   184.1742 61.71027 0.000000e+00\nas.numeric(perfrl)  3170.302   283.2011 11.19452 1.334886e-28"
+    "objectID": "projects/doublerobust/index.html#works-cited",
+    "href": "projects/doublerobust/index.html#works-cited",
+    "title": "Doubly Robust Estimators",
+    "section": "Works Cited",
+    "text": "Works Cited\n\n(in progress)\nhttps://doi.org/10.1093/aje/kwq439 https://www.degruyter.com/document/doi/10.1515/jci-2018-0016/html?lang=en"
+  },
+  {
+    "objectID": "projects/doublerobust/index.html#code-appendix",
+    "href": "projects/doublerobust/index.html#code-appendix",
+    "title": "Doubly Robust Estimators",
+    "section": "Code Appendix",
+    "text": "Code Appendix\n\n\nSimulating Data\n\nn <- 100000\nZ <- rnorm(n, 0, 1) # Z\nW <- rbinom(n, 1, .5) # W\n\nX <- rnorm(n, Z, 2)\n\nlog_odds_A <- .5 * Z + .5 * X\nodds_A <- exp(log_odds_A)\np_A <- odds_A / (1 + odds_A)\nA <- rbinom(n, 1, p_A) # A\n\nM <- rnorm(n, 20 - 2, .5)\n\nY <- rnorm(n, A + W + 2 * Z + 0.05 * M, .25)\n\ndata <- data.frame(A = (A), Y = Y, Z = Z, M = M, W = (W), X = X)\n\n\n\nPerform IPW and Outcome Regression\n\nget_normal_methods <- function(data, outcome_formula, exposure_formula) {\n  outcome <- lm(outcome_formula)\n  ps_model <- glm(exposure_formula, family = \"binomial\")\n  \n  \n  data <- data %>%\n  mutate(ps = predict(ps_model, newdata = data, type = \"response\")) %>%\n  mutate(ipw = case_when(\n            A == 1 ~ 1/ps,\n            A == 0 ~ 1/(1-ps)\n        ))\n  \n  example_ipw <- lm(Y ~ A, data = data, weights = ipw)\n  # print(summary(example_ipw)$coefficients)\n  # print(summary(outcome)$coefficients)\n  mods <- t(c(outcome_formula,exposure_formula))\n  output <- as.data.frame(cbind(mods, outcome$coefficients[2], \n                                example_ipw$coefficients[2]))\n  names(output) <- c(\"Outcome Formula\",\"Exposure Formula\",\n                     \"Causal Effect Estimate from Outcome Model\", \n                     \"Causal Effect Estimate from Treatment Model\")\n  return(output)\n}"
   },
   {
     "objectID": "projects.html",
     "href": "projects.html",
     "title": "Projects",
     "section": "",
-    "text": "Order By\n       Default\n         \n          Title\n        \n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\n\n \n\n\n\nDoubly Robust Estimators\n\n\n\nData Science\n\n\nStatistics\n\n\n\nAn Exploration of a Double Robust Estimator for Causal Inference\n\n\n\n\n\n\nApr 17, 2023\n\n\n\n\n\n\n\n\n\n\n \n\n\n\nBeyond the Report Card: Investigating the Factors that Define Educational Achievement\n\n\n\n\n\n\nThu Dang, Nathaniel Reimer, Jeremy Hubinger\n\n\nMay 8, 2023\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAsteroid Value Analysis\n\n\n\nData Science\n\n\nSpace\n\n\n\nVisualization and Analysis of Asterank data\n\n\n\n\n\n\nDec 14, 2022\n\n\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Nathaniel Reimer",
-    "section": "",
-    "text": "he/him/his\nStudent @ Macalester College\n\n\nMacalester College in St. Paul MN  Major Data Science, Minor in Economics | Sept 2020 - May 2024"
+    "text": "Order By\n       Default\n         \n          Title\n        \n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\n\n \n\n\n\nDoubly Robust Estimators\n\n\n\nData Science\n\n\nStatistics\n\n\n\nAn Exploration of a Double Robust Estimator for Causal Inference\n\n\n\n\n\n\nApr 17, 2023\n\n\n\n\n\n\n\n\n\n\n \n\n\n\nBeyond the Report Card: Investigating the Factors that Define Educational Achievement\n\n\n\n\n\n\nThu Dang, Nathaniel Reimer, Jeremy Hubinger\n\n\nMay 8, 2023\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nBeyond the Report Card: Investigating the Factors that Define Educational Achievement\n\n\n\n\n\n\nThu Dang, Nathaniel Reimer, Jeremy Hubinger\n\n\nMay 8, 2023\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAsteroid Value Analysis\n\n\n\nData Science\n\n\nSpace\n\n\n\nVisualization and Analysis of Asterank data\n\n\n\n\n\n\nDec 14, 2022\n\n\n\n\n\n\n\n\nNo matching items"
   }
 ]

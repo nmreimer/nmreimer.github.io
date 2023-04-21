@@ -19,5 +19,11 @@
   },
   "projects/californiaedu/narrative.qmd": {
     "narrative.html": "eec25acd"
+  },
+  "projects/californiaedu/index.qmd": {
+    "index.html": "c554d466"
+  },
+  "projects/californiaedu/narrative.knit.md": {
+    "narrative.knit.html": "0d8a0ff5"
   }
 }
