@@ -15,36 +15,39 @@ execute:
   message: false
 ---
 
-
 ```{r packages}
 library(dplyr)
 library(ggplot2)
 library(dagitty)
 library(ggdag)
-library(lemon)
 library(knitr)
-# knit_print.data.frame <- lemon_print
+
 
 tabledigits <- 5
 ```
+
 ```{r simulate data}
+set.seed(777)
 n <- 100000
-Z <- rnorm(n, 0, 1) # Z
+Z <- rnorm(n, 1, 2) # Z
 W <- rbinom(n, 1, .5) # W
 
-X <- rnorm(n, Z, 2)
+X <- rnorm(n, Z, 2) # X
 
-log_odds_A <- .5 * Z + .5 * X
+N <- rnorm(n, 10, 5)
+
+log_odds_A <- .25 * Z + .5 * X + .1 * N
 odds_A <- exp(log_odds_A)
 p_A <- odds_A / (1 + odds_A)
 A <- rbinom(n, 1, p_A) # A
 
-M <- rnorm(n, 20 - 2, .5)
+M <- rnorm(n, 20, 1) # M
 
-Y <- rnorm(n, A + W + 2 * Z + 0.05 * M, .25)
+Y <- rnorm(n, A + W + 2 * Z + 0.05 * M + rnorm(n, 2, 1), .25) # Y
 
 data <- data.frame(A = (A), Y = Y, Z = Z, M = M, W = (W), X = X)
 ```
+
 ```{r normal methods function}
 get_normal_methods <- function(data, outcome_formula, exposure_formula) {
   outcome <- lm(outcome_formula)
@@ -67,6 +70,7 @@ get_normal_methods <- function(data, outcome_formula, exposure_formula) {
   return(output)
 }
 ```
+
 ```{r get dr parts 2&3}
 get_dr_parts2_3 <- function(data, outcome_formula, exposure_formula) {
   outcome <- lm(outcome_formula)
@@ -98,6 +102,7 @@ get_dr_parts2_3 <- function(data, outcome_formula, exposure_formula) {
 }
 
 ```
+
 ```{r get all dr parts}
 get_dr_parts <- function(data, outcome_formula, exposure_formula) {
   outcome <- lm(outcome_formula)
@@ -143,7 +148,7 @@ get_dr_parts <- function(data, outcome_formula, exposure_formula) {
   partdr3 <- mean(-((predA1 * data$A) / data$ps)) - mean(-((predA0 * (1 - data$A)) / (1 - data$ps)))
 
   mods <- t(c(outcome_formula,exposure_formula))
-  output <- as.data.frame(cbind(mods, outcome$coefficients[2], example_ipw$coefficients[2], mean(part1), mean(part2), mean(-part3), mean(part1+part2+part3)))
+  output <- as.data.frame(cbind(mods, outcome$coefficients[2], example_ipw$coefficients[2], partdr1, partdr2, partdr3, sum(partdr1, partdr2, partdr3)))
   
   names(output) <- c("Outcome Formula","Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "$B$", "$C$", "D", "E")
   return(output)
@@ -151,22 +156,43 @@ get_dr_parts <- function(data, outcome_formula, exposure_formula) {
 
 ```
 
+### Doubly Robust Estimators
 
-Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. On the face of it the logic does not make sense. Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. This is the causal diagram for our simulated data:
+Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. Here I'll focus on doubly robust estimation for a quantitative outcome and a binary treatment. Here is one such estimator:
 
+```{=tex}
+\begin{aligned}
+&\frac{1}{n}\sum \left[ \hat{y}_1(\textrm{covariates}_i) + \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} \right] \\
+
+-&\frac{1}{n}\sum \left[ \hat{y}_0(\textrm{covariates}_i) + \frac{Y_i(1 - A_i) }{1 - \hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_0(\textrm{covariates}_i)*(1 - A_i)}{1 - \hat{e}(\textrm{covariates}_i)} \right]
+\end{aligned}
+```
+Where
+
+-   $\hat{y}_1(\textrm{covariates}_i)$ are the predicted values for each individual $i$ with treatment $1$.
+
+-   $Y_i$ and $A_i$ are, respectively, the actual outcome and treatment values for each individual.
+
+-   $\hat{e}(\textrm{covariates}_i)$ are the predicted propensity scores for each individual $i$.
+
+The rest of this page will attempt to explain how the doubly robust property works in this estimator.
+
+### Simulation
+
+This is the causal diagram for our simulated data:
 
 ```{r daggity}
-#| fig-alt: "A causal graph with arrows from W, M, Z, and A to the outcome Y; an arrow from W to X; arrows from X and Z to A; and an arrow from A to M"
+#| fig-alt: "A causal graph with arrows from W, M, Z, and A to the outcome Y; an arrow from W to X; arrows from X, Z, and N to A"
 #| fig-cap: "Where Y is the outcome and A is a binary treatment. All relationships are linear."
 
 dag <- dagitty('dag { bb="0,0,1,1"
 A [exposure,pos="0.1,0.5"]
-M [pos="0.5,0.4"]
+M [pos="0.6,0.4"]
+N [pos="0.4,0.4"]
 W [pos="0.9,0.35"]
 X [pos="0.1,0.35"]
 Y [outcome,pos="0.9,0.5"]
 Z [pos="0.5,0.6"]
-A -> M
 A -> Y
 M -> Y
 W -> X
@@ -174,6 +200,7 @@ W -> Y
 X -> A
 Z -> A
 Z -> Y
+N -> A
 }')
 
 
@@ -186,7 +213,7 @@ ggdag(dag)  +
 
 ### Boring Methods
 
-The naive researcher uses uses thorough research and input from experts to come up with two models:
+Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. The naive researcher uses uses thorough research and input from experts to come up with two models:
 
 1.  The outcome is affected by the treatment, Z, W, and M.
 
@@ -194,31 +221,30 @@ The naive researcher uses uses thorough research and input from experts to come 
 
 2.  The treatment an individual is assigned to is affected by X.
 
-    A \~ X
-    
-Since we simulated the data we know that they have arrived at the correct model of the outcome, but an incorrect model of the treatment. Using these models the researcher performs linear regression and inverse probability weighting to arrive at two different estimates of average causal effect. 
+    A \~ X + Z + N
 
+Since we simulated the data we know that they have arrived at the correct model of the outcome, but an incorrect model of the treatment. Using these models the researcher performs linear regression and inverse probability weighting to arrive at two different estimates of average causal effect.
 
 ```{r}
 ace_estimates_1 <- as.data.frame(t(get_normal_methods(data, Y ~ A + Z + W + M, A ~ X)))
 kable(ace_estimates_1, caption = "The Researcher's Puzzling Result", col.names = "", digits = tabledigits)
 ```
 
-The estimates are at odds and they can't tell which of their models is failing. Both models have equivalently tiny p-values, both models are based on strong evidence from experts. 
+The estimates are at odds and they can't tell which of their models is failing. Both models have equivalently tiny p-values, both models are based on strong evidence from experts.
 
 ### One Part of The Doubly Robust Estimator
 
 The researcher then figures out a way to make an ever worse estimator that will use both models.
 
 $$
-\frac{1}{n}\sum \frac{\hat{y}(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{1}{n}\sum \frac{\hat{y}(\textrm{covariates}_i)*(1- A_i)}{1-\hat{e}(\textrm{covariates}_i)}
+\frac{1}{n}\sum \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{1}{n}\sum \frac{\hat{y}_0(\textrm{covariates}_i)*(1- A_i)}{1-\hat{e}(\textrm{covariates}_i)}
 $$
 
-Where $\hat{y}(\textrm{covariates}_i)$ are the predicted values of the outcome for each individual $i$, $A_i$ are the treatments received, and $\hat{e}(\textrm{covariates}_i)$ are the probabilities the individual received the treatment $A = 1$. By using both the outcome and treatment models, the researcher has ensured that this estimator will fail if either the model is wrong. Not only will it fail, but it will fail by the same amount as the individual estimators. This is very important. 
+By using both the outcome and treatment models, the researcher has ensured that this estimator will fail if either the model is wrong. Not only will it fail, but it will fail by the same amount as the individual estimators. This is very important.
 
 ### With IPW
 
-For simplicity let's say IPW is 
+For simplicity let's say IPW is
 
 $$
 \frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)}  - \frac{1}{n}\sum \frac{Y_i (1-A_i)}{1-\hat{e}(\textrm{covariates}_i)}
@@ -229,10 +255,10 @@ Where $Y_i$ are the actual outcome values. If the treatment model is correct thi
 Focus just on one side of the equation, and subtract the same side from the bad estimator above:
 
 $$
-\frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}
+\frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}
 $$
 
-Our researcher, sees that if they have a correct outcome model then $Y_i A_i = \hat{y}(\textrm{covariates}_i)* A_i$ and so the whole thing would reduce zero. 
+Our researcher, sees that if they have a correct outcome model then $Y_i A_i = \hat{y}(\textrm{covariates}_i)* A_i$ and so the whole thing would reduce zero.
 
 ```{r}
 part_estimates_1 <- as.data.frame(t(get_dr_parts2_3(data, Y ~ A + Z + W + M, A ~ X)))
@@ -240,7 +266,7 @@ rownames(part_estimates_1) <- c("Outcome Formula", "Exposure Formula", "Outcome 
 kable(part_estimates_1, escape = FALSE, caption = "It does!", col.names = NULL, digits = tabledigits)
 ```
 
-Following this analysis our naive researcher knows the causal estimate from the outcome model probably the right one. If it weren't then, $Y_i A_i \neq \hat{y}(\textrm{covariates}_i)* A_i$ the whole thing does not reduce to zero. Instead we might observe something like the first column: 
+Following this analysis our naive researcher thinks the causal estimate from the outcome model probably the right one. If it weren't then, $Y_i A_i \neq \hat{y}(\textrm{covariates}_i)* A_i$ the whole thing does not reduce to zero. Instead we might observe something like the first column:
 
 ```{r}
 part_estimates_2 <- as.data.frame(t(get_dr_parts2_3(data, Y ~ A + M, A ~ X)))
@@ -250,55 +276,89 @@ part_estimates_2 <- as.data.frame(cbind(part_estimates_2, part_estimates_2_A))
 kable(part_estimates_2, escape = FALSE, caption = "", col.names = NULL, digits = tabledigits)
 ```
 
-In the second column we see that this is not actually a sound method on its own.
+Note the second column, this is not actually a way to tell if the outcome model is correct.
 
-### Adding Outcome Regression
+Nevertheless, we now have two of the three parts of the doubly robust estimator.
 
+### With Outcome Regression: The Full Estimator
+
+We just saw how two parts of the doubly robust estimator add together to equal zero when the outcome model is correct. In the full doubly robust estimator we also add
+
+$$
+\frac{1}{n}\sum \hat{y}_1(\textrm{covariates}_i) - \hat{y}_0(\textrm{covariates}_i)
+$$
+
+Since the other parts are zero when the outcome model is correct, the doubly robust estimator produces an estimate of average causal effect based on just the above sum.
+
+So the full estimator is:
+
+```{=tex}
+\begin{aligned}
+
+(\textrm{A})  \hskip 2em &\frac{1}{n}\sum \left[ \hat{y}_1(\textrm{covariates}_i) - \hat{y}_0(\textrm{covariates}_i) \right]\\
+
+&\quad\quad \uparrow \textrm{Estimates correctly when the outcome model is correct} \\
+
+\\
+
+(\textrm{B}) \hskip 1.2em +&\frac{1}{n}\sum \left[ \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{Y_i(1 - A_i) }{1 - \hat{e}(\textrm{covariates}_i)} \right]\\
+
+&\quad\quad \uparrow \textrm{Estimates correctly when the treatment model is correct} \\
+
+\\
+
+
+(\textrm{C}) \hskip 1.2em -&\frac{1}{n}\sum \left[\frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} -  \frac{\hat{y}_0(\textrm{covariates}_i)*(1 - A_i)}{1 - \hat{e}(\textrm{covariates}_i)} \right] \\
+
+&\quad\quad \uparrow \textrm{Estimates correctly when both models are correct} \\
+
+\\
+
+\end{aligned}
+```
+### Testing Doubly Robust Estimation
 
 ```{r}
-part_estimates_3 <- as.data.frame(t(get_dr_parts(data, Y ~ A, A ~ X +Z)))
-rownames(part_estimates_3) <- c("Outcome Formula", "Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "$\\frac{1}{n}\\sum \\frac{Y_i A_i}{\\hat{e}(\\textrm{covariates}_i)}$" , "$\\frac{1}{n}\\sum \\hat{y}(\\textrm{covariates}_i)$","$\\frac{\\hat{y}(\\textrm{covariates}_i)*A_i}{\\hat{e}(\\textrm{covariates}_i)}$","Difference")
-kable(part_estimates_3, escape = FALSE, caption = "It does!", col.names = NULL, digits = tabledigits)
+accurate <- as.data.frame(t(get_dr_parts(data, Y ~ A + Z + W + M, A ~ Z + X + N)))
+WrongExposureX <- as.data.frame(t(get_dr_parts(data, Y ~ A + Z + W + M, A ~ X + N)))
+WrongExposureZ <- as.data.frame(t(get_dr_parts(data, Y ~ A + Z + W + M, A ~ Z)))
+VeryWrongExposure <- as.data.frame(t(get_dr_parts(data, Y ~ A + Z + W + M, A ~ N*N + N)))
+
+WrongOutcome1 <- as.data.frame(t(get_dr_parts(data, Y ~ A + N, A ~ Z + X + N)))
+WrongOutcome2 <- as.data.frame(t(get_dr_parts(data, Y ~ A * Z + W, A ~ Z + X + N)))
+WrongOutcome3 <- as.data.frame(t(get_dr_parts(data, Y ~ A, A ~ Z + X + N)))
+
+inaccurate <- as.data.frame(t(get_dr_parts(data, Y ~ A, A ~ X)))
+inaccurate2 <- as.data.frame(t(get_dr_parts(data, Y ~ A + M, A ~ 1)))
+
+rownames(accurate) <- c("Outcome Formula", "Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "A", "B","C","Doubly Robust Estimate")
+
+
+kable(cbind(accurate, WrongExposureX, WrongExposureZ, VeryWrongExposure, inaccurate), 
+      col.names = c("Accurate Models", "Inaccurate Exposure Model", "Inaccurate Exposure Model", "Very Inaccurate Exposure Model", "Inaccurate Models"),
+      caption = "Testing",
+      digits = tabledigits)
+
+
+
+kable(cbind(accurate, WrongOutcome1, WrongOutcome2, WrongOutcome3, inaccurate, inaccurate2), 
+      col.names = c("Accurate Models","Inaccurate Outcome Model", "Inaccurate Outcome Model", "Very Inaccurate Outcome Model", "Inaccurate Models", "Inaccurate Models"),
+      caption = "Testing",
+      digits = tabledigits)
 ```
-
-
-Focusing again on just the $A = 1$ side of the equation:
-
-
-$$
-\frac{1}{n}\sum \hat{y}(\textrm{covariates}_i) - \frac{\hat{y}(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}
-$$
-If the exposure model is right $\hat{e}(\textrm{covariates}_i) = e(\textrm{covariates}_i)$
-
-$$
-\frac{1}{n}\sum \hat{y}(\textrm{covariates}_i) (1- \frac{A_i}{\hat{e}(\textrm{covariates}_i)})
-$$
-
-$$
-\frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} + \hat{y}(\textrm{covariates}_i) - \frac{\hat{y}(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}
-$$
-$$
-\frac{Y_i A_i + \hat{y}(\textrm{covariates}_i)\hat{e}(\textrm{covariates}_i)}{\hat{e}(\textrm{covariates}_i)} +  - \frac{\hat{y}(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}
-$$
-$$
-Y_i A_i = 
-$$
-
 
 ## Works Cited {.appendix}
 
 (in progress)
 
-https://doi.org/10.1093/aje/kwq439  
+https://doi.org/10.1093/aje/kwq439
 
-  
 https://www.degruyter.com/document/doi/10.1515/jci-2018-0016/html?lang=en
-
-
 
 ## Code Appendix {.appendix}
 
 ### Simulating Data
+
 ```{r}
 #| echo: true
 #| eval: false
@@ -319,5 +379,3 @@ Y <- rnorm(n, A + W + 2 * Z + 0.05 * M, .25)
 
 data <- data.frame(A = (A), Y = Y, Z = Z, M = M, W = (W), X = X)
 ```
-
-### Perform IPW and Outcome Regression
