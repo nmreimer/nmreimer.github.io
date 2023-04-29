@@ -22,69 +22,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -236,7 +173,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><p>The outcome is affected by the treatment, Z, W, and M.</p>
 <p>Y ~ A + Z + W + M</p></li>
 <li><p>The treatment an individual is assigned to is affected by X.</p>
-<p>A ~ X + Z + N</p></li>
+<p>A ~ X</p></li>
 </ol>
 <p>Since we simulated the data we know that they have arrived at the correct model of the outcome, but an incorrect model of the treatment. Using these models the researcher performs linear regression and inverse probability weighting to arrive at two different estimates of average causal effect.</p>
 <div class="cell">
@@ -254,11 +191,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Causal Effect Estimate from Outcome Model</td>
-<td style="text-align: left;">1.005946</td>
+<td style="text-align: left;">1.007717</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Causal Effect Estimate from Treatment Model</td>
-<td style="text-align: left;">1.952361</td>
+<td style="text-align: left;">2.99333</td>
 </tr>
 </tbody>
 </table>
@@ -281,7 +218,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 \frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)}  - \frac{1}{n}\sum \frac{Y_i (1-A_i)}{1-\hat{e}(\textrm{covariates}_i)}
 \]</span></p>
 <p>Where <span class="math inline">\(Y_i\)</span> are the actual outcome values. If the treatment model is correct this will produce a correct estimate of average causal effect.</p>
-<p>Focus just on one side of the equation, and subtract the same side from the bad estimator above:</p>
+<p>Focus just on one side of the equation, and subtract the same side of the bad estimator above:</p>
 <p><span class="math display">\[
 \frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}
 \]</span></p>
@@ -305,23 +242,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Outcome Model Estimate</td>
-<td style="text-align: left;">1.005946</td>
+<td style="text-align: left;">1.007717</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">IPW Estimate</td>
-<td style="text-align: left;">1.952361</td>
+<td style="text-align: left;">2.99333</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span class="math inline">\(\frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)}\)</span></td>
-<td style="text-align: left;">6.749474</td>
+<td style="text-align: left;">6.882267</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span class="math inline">\(\frac{1}{n}\sum \frac{\hat{y}(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}\)</span></td>
-<td style="text-align: left;">6.749384</td>
+<td style="text-align: left;">6.882962</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Difference</td>
-<td style="text-align: left;">8.976111e-05</td>
+<td style="text-align: left;">-0.0006948846</td>
 </tr>
 </tbody>
 </table>
@@ -332,45 +269,45 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
 <colgroup>
-<col style="width: 79%">
-<col style="width: 9%">
+<col style="width: 76%">
+<col style="width: 11%">
 <col style="width: 11%">
 </colgroup>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Outcome Formula</td>
-<td style="text-align: left;">Y ~ A + M</td>
+<td style="text-align: left;">Y ~ A + X</td>
 <td style="text-align: left;">Y ~ A</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Exposure Formula</td>
-<td style="text-align: left;">A ~ X</td>
+<td style="text-align: left;">A ~ X + Z + N</td>
 <td style="text-align: left;">A ~ M</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Outcome Model Estimate</td>
-<td style="text-align: left;">4.973566</td>
-<td style="text-align: left;">4.973385</td>
+<td style="text-align: left;">2.882163</td>
+<td style="text-align: left;">2.809673</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">IPW Estimate</td>
-<td style="text-align: left;">1.952361</td>
-<td style="text-align: left;">4.97346</td>
+<td style="text-align: left;">1.033126</td>
+<td style="text-align: left;">2.809669</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span class="math inline">\(\frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)}\)</span></td>
-<td style="text-align: left;">6.749474</td>
-<td style="text-align: left;">7.479902</td>
+<td style="text-align: left;">6.491782</td>
+<td style="text-align: left;">6.863526</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span class="math inline">\(\frac{1}{n}\sum \frac{\hat{y}(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}\)</span></td>
-<td style="text-align: left;">7.49003</td>
-<td style="text-align: left;">7.479846</td>
+<td style="text-align: left;">6.875744</td>
+<td style="text-align: left;">6.86353</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Difference</td>
-<td style="text-align: left;">-0.7405556</td>
-<td style="text-align: left;">5.668737e-05</td>
+<td style="text-align: left;">-0.3839619</td>
+<td style="text-align: left;">-4.192973e-06</td>
 </tr>
 </tbody>
 </table>
@@ -398,13 +335,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 &amp;\quad\quad \uparrow \textrm{Estimates correctly when both models are correct} \\
 \\
 \end{aligned}\]</span>
+<p>Laid out like this, it is relatively simple to see how doubly robust estimation works. For example, if a researcher has an accurate exposure model and an inaccurate outcome model, <span class="math inline">\((\textrm{A})\)</span> and <span class="math inline">\((\textrm{C})\)</span> cancel each other out and we are left with just the accurate estimate based on the exposure model: <span class="math inline">\((\textrm{C})\)</span>. Take a little bit to think about the other possibilities yourself.</p>
 </section>
 <section id="testing-doubly-robust-estimation" class="level3">
 <h3 data-anchor-id="testing-doubly-robust-estimation">Testing Doubly Robust Estimation</h3>
 <div class="cell">
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
-<caption>Testing</caption>
 <colgroup>
 <col style="width: 16%">
 <col style="width: 12%">
@@ -442,58 +379,60 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Outcome Model Estimate</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">4.973385</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">2.809673</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">IPW Estimate</td>
-<td style="text-align: left;">0.9699816</td>
-<td style="text-align: left;">1.934765</td>
-<td style="text-align: left;">1.164451</td>
-<td style="text-align: left;">5.065722</td>
-<td style="text-align: left;">1.952361</td>
+<td style="text-align: left;">1.033126</td>
+<td style="text-align: left;">3.006719</td>
+<td style="text-align: left;">1.226492</td>
+<td style="text-align: left;">2.821652</td>
+<td style="text-align: left;">2.99333</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">A</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">4.973385</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">2.809673</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">B</td>
-<td style="text-align: left;">0.9244188</td>
-<td style="text-align: left;">1.928329</td>
-<td style="text-align: left;">1.285034</td>
-<td style="text-align: left;">5.068746</td>
-<td style="text-align: left;">2.002247</td>
+<td style="text-align: left;">1.000927</td>
+<td style="text-align: left;">2.983594</td>
+<td style="text-align: left;">1.229161</td>
+<td style="text-align: left;">2.821657</td>
+<td style="text-align: left;">2.974662</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">C</td>
-<td style="text-align: left;">-0.9280126</td>
-<td style="text-align: left;">-1.941743</td>
-<td style="text-align: left;">-1.287458</td>
-<td style="text-align: left;">-5.067957</td>
-<td style="text-align: left;">-5.004859</td>
+<td style="text-align: left;">-0.9932444</td>
+<td style="text-align: left;">-2.974163</td>
+<td style="text-align: left;">-1.230576</td>
+<td style="text-align: left;">-2.820911</td>
+<td style="text-align: left;">-2.790294</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Doubly Robust Estimate</td>
-<td style="text-align: left;">1.002352</td>
-<td style="text-align: left;">0.9925309</td>
-<td style="text-align: left;">1.003522</td>
-<td style="text-align: left;">1.006735</td>
-<td style="text-align: left;">1.970774</td>
+<td style="text-align: left;">1.015399</td>
+<td style="text-align: left;">1.017147</td>
+<td style="text-align: left;">1.006302</td>
+<td style="text-align: left;">1.008463</td>
+<td style="text-align: left;">2.994041</td>
 </tr>
 </tbody>
 </table>
 </div>
+</div>
+<p>The real causal effect in our simulated data is 1. With inaccurate exposure models and an accurate outcome model we observe, just as we would expect, <span class="math inline">\((\textrm{B})\)</span> and <span class="math inline">\((\textrm{C})\)</span> cancel out and we are left with an estimate based on <span class="math inline">\((\textrm{A})\)</span>. When both models are inaccurate this does not happen.</p>
+<div class="cell">
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
-<caption>Testing</caption>
 <colgroup>
 <col style="width: 14%">
 <col style="width: 11%">
@@ -535,62 +474,63 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Outcome Model Estimate</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">5.055957</td>
-<td style="text-align: left;">1.00563</td>
-<td style="text-align: left;">4.973385</td>
-<td style="text-align: left;">4.973385</td>
-<td style="text-align: left;">4.973566</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">2.818322</td>
+<td style="text-align: left;">1.00705</td>
+<td style="text-align: left;">2.809673</td>
+<td style="text-align: left;">2.809673</td>
+<td style="text-align: left;">2.809656</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">IPW Estimate</td>
-<td style="text-align: left;">0.9699816</td>
-<td style="text-align: left;">0.9699816</td>
-<td style="text-align: left;">0.9699816</td>
-<td style="text-align: left;">0.9699816</td>
-<td style="text-align: left;">1.952361</td>
-<td style="text-align: left;">4.973385</td>
+<td style="text-align: left;">1.033126</td>
+<td style="text-align: left;">1.033126</td>
+<td style="text-align: left;">1.033126</td>
+<td style="text-align: left;">1.033126</td>
+<td style="text-align: left;">2.99333</td>
+<td style="text-align: left;">2.809673</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">A</td>
-<td style="text-align: left;">1.005946</td>
-<td style="text-align: left;">5.055957</td>
-<td style="text-align: left;">1.000887</td>
-<td style="text-align: left;">4.973385</td>
-<td style="text-align: left;">4.973385</td>
-<td style="text-align: left;">4.973566</td>
+<td style="text-align: left;">1.007717</td>
+<td style="text-align: left;">2.818322</td>
+<td style="text-align: left;">1.008797</td>
+<td style="text-align: left;">2.809673</td>
+<td style="text-align: left;">2.809673</td>
+<td style="text-align: left;">2.809656</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">B</td>
-<td style="text-align: left;">0.9244188</td>
-<td style="text-align: left;">0.9244188</td>
-<td style="text-align: left;">0.9244188</td>
-<td style="text-align: left;">0.9244188</td>
-<td style="text-align: left;">2.002247</td>
-<td style="text-align: left;">4.973385</td>
+<td style="text-align: left;">1.000927</td>
+<td style="text-align: left;">1.000927</td>
+<td style="text-align: left;">1.000927</td>
+<td style="text-align: left;">1.000927</td>
+<td style="text-align: left;">2.974662</td>
+<td style="text-align: left;">2.809673</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">C</td>
-<td style="text-align: left;">-0.9280126</td>
-<td style="text-align: left;">-5.029893</td>
-<td style="text-align: left;">-0.923734</td>
-<td style="text-align: left;">-4.947379</td>
-<td style="text-align: left;">-5.004859</td>
-<td style="text-align: left;">-4.973385</td>
+<td style="text-align: left;">-0.9932444</td>
+<td style="text-align: left;">-2.79385</td>
+<td style="text-align: left;">-0.9936951</td>
+<td style="text-align: left;">-2.785065</td>
+<td style="text-align: left;">-2.790294</td>
+<td style="text-align: left;">-2.809673</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Doubly Robust Estimate</td>
-<td style="text-align: left;">1.002352</td>
-<td style="text-align: left;">0.9504826</td>
-<td style="text-align: left;">1.001572</td>
-<td style="text-align: left;">0.9504245</td>
-<td style="text-align: left;">1.970774</td>
-<td style="text-align: left;">4.973566</td>
+<td style="text-align: left;">1.015399</td>
+<td style="text-align: left;">1.025398</td>
+<td style="text-align: left;">1.016028</td>
+<td style="text-align: left;">1.025535</td>
+<td style="text-align: left;">2.994041</td>
+<td style="text-align: left;">2.809656</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
+<p>When we have an accurate exposure and an inaccurate outcome model, <span class="math inline">\((\textrm{A})\)</span> and <span class="math inline">\((\textrm{C})\)</span> cancel out and we are left with an estimate based on <span class="math inline">\((\textrm{B})\)</span>.</p>
 </section>
 
 
@@ -603,24 +543,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <section id="simulating-data" class="level3">
 <h3 data-anchor-id="simulating-data">Simulating Data</h3>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100000</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>Z <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">1</span>) <span class="co"># Z</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>W <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, .<span class="dv">5</span>) <span class="co"># W</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, Z, <span class="dv">2</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>log_odds_A <span class="ot">&lt;-</span> .<span class="dv">5</span> <span class="sc">*</span> Z <span class="sc">+</span> .<span class="dv">5</span> <span class="sc">*</span> X</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>odds_A <span class="ot">&lt;-</span> <span class="fu">exp</span>(log_odds_A)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>p_A <span class="ot">&lt;-</span> odds_A <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> odds_A)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, p_A) <span class="co"># A</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="dv">20</span> <span class="sc">-</span> <span class="dv">2</span>, .<span class="dv">5</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, A <span class="sc">+</span> W <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> Z <span class="sc">+</span> <span class="fl">0.05</span> <span class="sc">*</span> M, .<span class="dv">25</span>)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">A =</span> (A), <span class="at">Y =</span> Y, <span class="at">Z =</span> Z, <span class="at">M =</span> M, <span class="at">W =</span> (W), <span class="at">X =</span> X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 
 
 </section>

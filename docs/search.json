@@ -63,13 +63,6 @@
     "text": "Appendix"
   },
   {
-    "objectID": "projects/doublerobust/index.html",
-    "href": "projects/doublerobust/index.html",
-    "title": "Doubly Robust Estimators",
-    "section": "",
-    "text": "Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. On the face of it the logic does not make sense. Consider a naive researcher who, not knowing anything about doubly robust estimators, creates two estimates of average causal effect. This is the causal diagram for our simulated data:"
-  },
-  {
     "objectID": "projects/doublerobust/index.html#works-cited",
     "href": "projects/doublerobust/index.html#works-cited",
     "title": "Doubly Robust Estimators",
@@ -81,7 +74,7 @@
     "href": "projects/doublerobust/index.html#code-appendix",
     "title": "Doubly Robust Estimators",
     "section": "Code Appendix",
-    "text": "Code Appendix\n\n\nSimulating Data\n\nn <- 100000\nZ <- rnorm(n, 0, 1) # Z\nW <- rbinom(n, 1, .5) # W\n\nX <- rnorm(n, Z, 2)\n\nlog_odds_A <- .5 * Z + .5 * X\nodds_A <- exp(log_odds_A)\np_A <- odds_A / (1 + odds_A)\nA <- rbinom(n, 1, p_A) # A\n\nM <- rnorm(n, 20 - 2, .5)\n\nY <- rnorm(n, A + W + 2 * Z + 0.05 * M, .25)\n\ndata <- data.frame(A = (A), Y = Y, Z = Z, M = M, W = (W), X = X)"
+    "text": "Code Appendix\n\n\nSimulating Data"
   },
   {
     "objectID": "projects.html",
