@@ -358,9 +358,9 @@ kable(cbind(accurate, WrongOutcome1, WrongOutcome2, WrongOutcome3, inaccurate, i
 When we have an accurate exposure and an inaccurate outcome model, $(\textrm{A})$ and $(\textrm{C})$ cancel out and we are left with an estimate based on $(\textrm{B})$. 
 
 
-## Works Cited {.appendix}
+## Sources {.appendix}
 
-(in progress)
+"Doubly Robust Estimation of Causal Effects" by Funk et al. and "A Falsifiability Characterization of Double Robustness Through Logical Operators" by Frangakis were used heavily in this project. My goal in this project was essentially to create an explanation of double robustness that combined Frangakis' logical framework with the more numerical and simulation-based approach of the Funk paper.
 
 https://doi.org/10.1093/aje/kwq439
 
@@ -369,3 +369,150 @@ https://www.degruyter.com/document/doi/10.1515/jci-2018-0016/html?lang=en
 ## Code Appendix {.appendix}
 
 ### Simulating Data
+
+```{r}
+#| echo: true
+#| eval: false
+set.seed(7)
+n <- 100000
+Z <- rnorm(n, 1, 2) # Z
+
+W <- rbinom(n, 1, .5) # W
+
+X <- rnorm(n, 2*W, 2) # X
+
+M <- rnorm(n, 20, 1) # M
+
+N <- rnorm(n, 10, 2) # N
+
+log_odds_A <- .25 * Z + .5 * X + .1 * N
+odds_A <- exp(log_odds_A)
+p_A <- odds_A / (1 + odds_A)
+A <- rbinom(n, 1, p_A) # A
+
+
+
+Y <- rnorm(n, A + W + 2 * Z + 0.05 * M + rnorm(n, 2, 1), .25) # Y
+
+data <- data.frame(A = (A), Y = Y, Z = Z, M = M, W = (W), X = X)
+```
+
+### Function for Normal Methods
+
+```{r}
+#| echo: true
+#| eval: false
+get_normal_methods <- function(data, outcome_formula, exposure_formula) {
+  outcome <- lm(outcome_formula)
+  ps_model <- glm(exposure_formula, family = "binomial")
+  
+  
+  data <- data %>%
+  mutate(ps = predict(ps_model, newdata = data, type = "response")) %>%
+  mutate(ipw = case_when(
+            A == 1 ~ 1/ps,
+            A == 0 ~ 1/(1-ps)
+        ))
+  
+  example_ipw <- lm(Y ~ A, data = data, weights = ipw)
+  # print(summary(example_ipw)$coefficients)
+  # print(summary(outcome)$coefficients)
+  mods <- t(c(outcome_formula,exposure_formula))
+  output <- as.data.frame(cbind(mods, outcome$coefficients[2], example_ipw$coefficients[2]))
+  names(output) <- c("Outcome Formula","Exposure Formula","Causal Effect Estimate from Outcome Model", "Causal Effect Estimate from Treatment Model")
+  return(output)
+}
+```
+
+### Function for Two Parts of DR Estimator
+
+```{r}
+#| echo: true
+#| eval: false
+get_dr_parts2_3 <- function(data, outcome_formula, exposure_formula) {
+  outcome <- lm(outcome_formula)
+  ps_model <- glm(exposure_formula, family = "binomial")
+  
+  forceA0 <- data %>% mutate(A = 0)
+  forceA1 <- data %>% mutate(A = 1)
+
+  predA0 <- predict(outcome, newdata = forceA0)
+  predA1 <- predict(outcome, newdata = forceA1)
+
+  data <- data %>%
+  mutate(ps = predict(ps_model, newdata = data, type = "response")) %>%
+  mutate(ipw = case_when(
+            A == 1 ~ 1/ps,
+            A == 0 ~ 1/(1-ps)
+        ))
+  part1 <- predA1
+  part2 <- ((data$Y * data$A) / (data$ps))
+  part3 <- -((predA1 * data$A) / data$ps)
+
+
+  example_ipw <- lm(Y ~ A, data = data, weights = ipw)
+
+  mods <- t(c(outcome_formula,exposure_formula))
+  output <- as.data.frame(cbind(mods, outcome$coefficients[2], example_ipw$coefficients[2], mean(part2), mean(-part3), mean(part2+part3)))
+  names(output) <- c("Outcome Formula","Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "$B$", "$C$", "D")
+  return(output)
+}
+
+```
+
+### Function for All Parts of DR Estimator
+
+```{r}
+#| echo: true
+#| eval: false
+get_dr_parts <- function(data, outcome_formula, exposure_formula) {
+  outcome <- lm(outcome_formula)
+  ps_model <- glm(exposure_formula, family = "binomial")
+
+
+  data <- data %>%
+  mutate(ps = predict(ps_model, newdata = data, type = "response")) %>%
+  mutate(ipw = case_when(
+            A == 1 ~ 1/ps,
+            A == 0 ~ 1/(1-ps)
+        ))
+
+  example_ipw <- lm(Y ~ A, data = data, weights = ipw)
+
+  forceA0 <- data %>% mutate(A = 0)
+  forceA1 <- data %>% mutate(A = 1)
+
+  predA0 <- predict(outcome, newdata = forceA0)
+  predA1 <- predict(outcome, newdata = forceA1)
+
+  DR1 <-
+    (((    data$A) * data$Y) / (    data$ps)) -      # IPW part
+    ((predA1 * (data$A - data$ps))) / (    data$ps)  # Other thing
+  DR0 <-
+    (((1 - data$A) * data$Y) / (1 - data$ps)) +      # IPW part
+    ((predA0 * (data$A - data$ps))) / (1 - data$ps)  # Other thing
+
+  Estimator1 <- predA1 + ((data$Y * data$A) / (data$ps)) - ((predA1 * data$A) / data$ps)
+  Estimator0 <- predA0 + ((data$Y * (1 - data$A)) / (1 - data$ps)) - ((predA0 * (1 - data$A)) / (1 - data$ps))
+
+
+  part1 <- predA1
+  part2 <- ((data$Y * data$A) / (data$ps))
+  part3 <- -((predA1 * data$A) / data$ps)
+  
+  part1A0 <- predA0
+  part2A0 <- ((data$Y * (1 - data$A)) / (1 - data$ps))
+  part3A0 <- -((predA0 * (1 - data$A)) / (1 - data$ps))
+  
+  partdr1 <- mean(part1) - mean(part1A0)
+  partdr2 <- mean((data$Y * data$A) / (data$ps)) - mean((data$Y * (1 - data$A)) / (1 - data$ps))
+  partdr3 <- mean(-((predA1 * data$A) / data$ps)) - mean(-((predA0 * (1 - data$A)) / (1 - data$ps)))
+
+  mods <- t(c(outcome_formula,exposure_formula))
+  output <- as.data.frame(cbind(mods, outcome$coefficients[2], example_ipw$coefficients[2], partdr1, partdr2, partdr3, sum(partdr1, partdr2, partdr3)))
+  
+  names(output) <- c("Outcome Formula","Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "$B$", "$C$", "D", "E")
+  return(output)
+}
+
+```
