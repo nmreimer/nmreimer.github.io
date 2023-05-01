@@ -25,5 +25,29 @@
   },
   "projects/californiaedu/narrative.knit.md": {
     "narrative.knit.html": "0d8a0ff5"
+  },
+  "projects/californiaedu/school_insights.qmd": {
+    "school_insights.html": "1267296d"
+  },
+  "projects/californiaedu/result.qmd": {
+    "result.html": "7029e0bd"
+  },
+  "projects/californiaedu/wideformatting.rmd": {
+    "wideformatting.html": "408f2304"
+  },
+  "projects/californiaedu/IntermediateNarrative.Rmd": {
+    "IntermediateNarrative.html": "3a151483"
+  },
+  "projects/californiaedu/county_insights.qmd": {
+    "county_insights.html": "21a0f67b"
+  },
+  "projects/californiaedu/data.qmd": {
+    "data.html": "c75824de"
+  },
+  "projects/californiaedu/motivation.qmd": {
+    "motivation.html": "6cc7d9dd"
+  },
+  "projects/californiaedu/model.qmd": {
+    "model.html": "09439bbc"
   }
 }
