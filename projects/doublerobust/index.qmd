@@ -40,12 +40,10 @@ M <- rnorm(n, 20, 1) # M
 
 N <- rnorm(n, 10, 2) # N
 
-log_odds_A <- .25 * Z + .5 * X + .1 * N
+log_odds_A <- .5 * Z + .5 * X - .1 * N
 odds_A <- exp(log_odds_A)
 p_A <- odds_A / (1 + odds_A)
 A <- rbinom(n, 1, p_A) # A
-
-
 
 Y <- rnorm(n, A + W + 2 * Z + 0.05 * M + rnorm(n, 2, 1), .25) # Y
 
@@ -337,7 +335,7 @@ WrongOutcome2 <- as.data.frame(t(get_dr_parts(data, Y ~ A * Z + W, A ~ Z + X + N
 WrongOutcome3 <- as.data.frame(t(get_dr_parts(data, Y ~ A, A ~ Z + X + N)))
 
 inaccurate <- as.data.frame(t(get_dr_parts(data, Y ~ A, A ~ X)))
-inaccurate2 <- as.data.frame(t(get_dr_parts(data, Y ~ A + M, A ~ 1)))
+inaccurate2 <- as.data.frame(t(get_dr_parts(data, Y ~ A, A ~ M)))
 
 rownames(accurate) <- c("Outcome Formula", "Exposure Formula", "Outcome Model Estimate", "IPW Estimate", "A", "B","C","Doubly Robust Estimate")
 
@@ -366,7 +364,7 @@ https://doi.org/10.1093/aje/kwq439
 
 https://www.degruyter.com/document/doi/10.1515/jci-2018-0016/html?lang=en
 
-## Code Appendix {.appendix}
+## Code {.appendix}
 
 ### Simulating Data
 
