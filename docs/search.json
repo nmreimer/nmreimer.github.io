@@ -53,7 +53,7 @@
     "href": "projects/doublerobust/index.html#sources",
     "title": "Doubly Robust Estimators",
     "section": "Sources",
-    "text": "Sources\n\n“Doubly Robust Estimation of Causal Effects” by Funk et al. and “A Falsifiability Characterization of Double Robustness Through Logical Operators” by Frangakis were used heavily in this project. My goal in this project was essentially to create an explanation of double robustness that combined Frangakis’ logical framework with the more numerical and simulation-based approach of the Funk paper.\nhttps://doi.org/10.1093/aje/kwq439\nhttps://www.degruyter.com/document/doi/10.1515/jci-2018-0016/html?lang=en"
+    "text": "Sources\n\n“Doubly Robust Estimation of Causal Effects” by Funk et al. and “A Falsifiability Characterization of Double Robustness Through Logical Operators” by Frangakis were used heavily in this project. My goal in this project was essentially to create an explanation of double robustness that combined Frangakis’ logical framework with the more numerical and simulation-based approach of the Funk paper.\nDoubly Robust Estimation of Causal Effects\nA Falsifiability Characterization of Double Robustness Through Logical Operators"
   },
   {
     "objectID": "projects/doublerobust/index.html#code",

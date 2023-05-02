@@ -200,12 +200,24 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div class="cell">
 </div>
+<div class="cell">
+</div>
 <section id="doubly-robust-estimators" class="level3">
 <h3 data-anchor-id="doubly-robust-estimators">Doubly Robust Estimators</h3>
 <p>Doubly Robust estimation allows researchers to take advantage of both an outcome model and a model of treatment. If one or both of the models is correct, the doubly robust estimator will produce an accurate estimate of the causal effect. Here I’ll focus on doubly robust estimation for a quantitative outcome and a binary treatment. Here is one such estimator:</p>
 <span class="math display">\[\begin{aligned}
 &amp;\frac{1}{n}\sum \left[ \hat{y}_1(\textrm{covariates}_i) + \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} \right] \\
--&amp;\frac{1}{n}\sum \left[ \hat{y}_0(\textrm{covariates}_i) + \frac{Y_i(1 - A_i) }{1 - \hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_0(\textrm{covariates}_i)*(1 - A_i)}{1 - \hat{e}(\textrm{covariates}_i)} \right]
+-&amp;\frac{1}{n}\sum \left[ \hat{y}_0(\textrm{covariates}_i) + \frac{Y_i(1 - A_i) }{1 - \hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_0(\textrm{covariates}_i)*(1 - A_i)}{1 - \hat{e}(\textrm{covariates}_i)} \right] \\
+&amp;\quad\quad\quad\quad\quad\quad (\textrm{A}) \quad\quad\quad\quad\quad\quad (\textrm{B}) \quad\quad\quad\quad\quad\quad\quad\quad\quad\quad (\textrm{C})
+\end{aligned}\]</span>
+<p>Or, alternatively:</p>
+<span class="math display">\[\begin{aligned}
+(\textrm{A})  \hskip 2em &amp;\frac{1}{n}\sum \left[ \hat{y}_1(\textrm{covariates}_i) - \hat{y}_0(\textrm{covariates}_i) \right]\\
+\\
+(\textrm{B}) \hskip 1.2em +&amp;\frac{1}{n}\sum \left[ \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{Y_i(1 - A_i) }{1 - \hat{e}(\textrm{covariates}_i)} \right]\\
+\\
+(\textrm{C}) \hskip 1.2em -&amp;\frac{1}{n}\sum \left[\frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} -  \frac{\hat{y}_0(\textrm{covariates}_i)*(1 - A_i)}{1 - \hat{e}(\textrm{covariates}_i)} \right] \\
+\\
 \end{aligned}\]</span>
 <p>Where</p>
 <ul>
@@ -270,22 +282,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h3 data-anchor-id="one-part-of-the-doubly-robust-estimator">One Part of The Doubly Robust Estimator</h3>
 <p>The researcher then figures out a way to make an ever worse estimator that will use both models.</p>
 <p><span class="math display">\[
-\frac{1}{n}\sum \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{1}{n}\sum \frac{\hat{y}_0(\textrm{covariates}_i)*(1- A_i)}{1-\hat{e}(\textrm{covariates}_i)}
+(\textrm{C}) \quad\quad \frac{1}{n}\sum \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{1}{n}\sum \frac{\hat{y}_0(\textrm{covariates}_i)*(1- A_i)}{1-\hat{e}(\textrm{covariates}_i)}
 \]</span></p>
-<p>By using both the outcome and treatment models, the researcher has ensured that this estimator will fail if either the model is wrong. Not only will it fail, but it will fail by the same amount as the individual estimators. This is very important.</p>
+<p>By using both the outcome and treatment models, the researcher has ensured that this estimator will fail if either the model is wrong. Not only will it fail, but it will fail by the same amount as the individual estimators. This is important.</p>
 </section>
 <section id="with-ipw" class="level3">
 <h3 data-anchor-id="with-ipw">With IPW</h3>
 <p>For simplicity let’s say IPW is</p>
 <p><span class="math display">\[
-\frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)}  - \frac{1}{n}\sum \frac{Y_i (1-A_i)}{1-\hat{e}(\textrm{covariates}_i)}
+(\textrm{B}) \quad\quad  \frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)}  - \frac{1}{n}\sum \frac{Y_i (1-A_i)}{1-\hat{e}(\textrm{covariates}_i)}
 \]</span></p>
 <p>Where <span class="math inline">\(Y_i\)</span> are the actual outcome values. If the treatment model is correct this will produce a correct estimate of average causal effect.</p>
 <p>Focus just on one side of the equation, and subtract the same side of the bad estimator above:</p>
 <p><span class="math display">\[
 \frac{1}{n}\sum \frac{Y_i A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)}
 \]</span></p>
-<p>Our researcher, sees that if they have a correct outcome model then <span class="math inline">\(Y_i A_i = \hat{y}(\textrm{covariates}_i)* A_i\)</span> and so the whole thing would reduce zero.</p>
+<p><span class="math display">\[
+(\textrm{B}_1) - (\textrm{C}_1)
+\]</span></p>
+<p>The researcher sees that if they have a correct outcome model then <span class="math inline">\(Y_i A_i = \hat{y}(\textrm{covariates}_i)* A_i\)</span> and so the whole thing would reduce zero.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
@@ -383,7 +398,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h3 data-anchor-id="with-outcome-regression-the-full-estimator">With Outcome Regression: The Full Estimator</h3>
 <p>We just saw how two parts of the doubly robust estimator add together to equal zero when the outcome model is correct. In the full doubly robust estimator we also add</p>
 <p><span class="math display">\[
-\frac{1}{n}\sum \hat{y}_1(\textrm{covariates}_i) - \hat{y}_0(\textrm{covariates}_i)
+(\textrm{A}) \quad\quad  \frac{1}{n}\sum \hat{y}_1(\textrm{covariates}_i) - \hat{y}_0(\textrm{covariates}_i)
 \]</span></p>
 <p>Since the other parts are zero when the outcome model is correct, the doubly robust estimator produces an estimate of average causal effect based on just the above sum.</p>
 <p>So the full estimator is:</p>
@@ -600,8 +615,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="quarto-appendix" class="default"><section id="sources" class="level2 appendix"><h2 class="quarto-appendix-heading">Sources</h2><div class="quarto-appendix-contents">
 
 <p>“Doubly Robust Estimation of Causal Effects” by Funk et al.&nbsp;and “A Falsifiability Characterization of Double Robustness Through Logical Operators” by Frangakis were used heavily in this project. My goal in this project was essentially to create an explanation of double robustness that combined Frangakis’ logical framework with the more numerical and simulation-based approach of the Funk paper.</p>
-<p>https://doi.org/10.1093/aje/kwq439</p>
-<p>https://www.degruyter.com/document/doi/10.1515/jci-2018-0016/html?lang=en</p>
+<p><a href="https://doi.org/10.1093/aje/kwq439">Doubly Robust Estimation of Causal Effects</a></p>
+<p><a href="https://www.degruyter.com/document/doi/10.1515/jci-2018-0016/html?lang=en">A Falsifiability Characterization of Double Robustness Through Logical Operators</a></p>
 </div></section><section id="code" class="level2 appendix"><h2 class="quarto-appendix-heading">Code</h2><div class="quarto-appendix-contents">
 
 <section id="simulating-data" class="level3">
