@@ -18,8 +18,7 @@ Student @ <a href="https://www.macalester.edu/" target="_blank" rel="noopener">M
 
 ## Education
 Macalester College in St. Paul MN <br>
-Major Data Science, Minor in Economics | Sept 2020 - May 2024
-
+Major Data Science, Minors in Economics and Classical Languages| Sept 2020 - May 2024
 
 
 :::
