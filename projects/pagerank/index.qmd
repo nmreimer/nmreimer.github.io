@@ -13,6 +13,7 @@ execute:
   echo: false
   warning: false
   message: false
+image: images/pagerank-Aq-v2.png
 format: html
 ---
 <!DOCTYPE html><html>
