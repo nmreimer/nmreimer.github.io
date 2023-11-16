@@ -43,7 +43,7 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 {\sc cla365 technical report }}
 
 \author{Nathaniel Reimer \and Preston Locke}
-\date{\today}
+\date{April 30, 2022}
 
 \begin{document}
 \maketitle
@@ -123,7 +123,7 @@ which take in an $n \times n$ adjacency matrix \lstinline{adj} and output, respe
 the $n \times n$ Google matrix of the network and a vector of page ranks given the value
 of \lstinline{q} (which defaults to $0.15$).
 
-\begin{lstlisting}[language=R]
+\begin{verbatim}
 GoogleMatrix = function(adj, q=0.15) {
   n = dim(adj)[1]
   G = matrix(nrow=n, ncol=n)
@@ -150,7 +150,7 @@ PageRankVector = function(adj, q=0.15) {
   # Return the normalized version (inf. norm)
   return(p / sum(p))
 }
-\end{lstlisting}
+\end{verbatim}
 
 \begin{figure}[H]
 $$

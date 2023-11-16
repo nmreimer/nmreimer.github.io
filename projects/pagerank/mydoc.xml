@@ -1,0 +1,1180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml searchpaths="/home/nmreimer/Documents/ProjectsInDS/nmreimer.github.io/projects/pagerank"?>
+<?latexml class="article"?>
+<?latexml package="amsmath"?>
+<?latexml package="graphicx"?>
+<?latexml package="hyperref"?>
+<?latexml package="hypcap" options="all"?>
+<?latexml package="float"?>
+<!--  %Enhancing the code listings --><!--  %“usepackage–courier˝ % “ttfamily will use Courier font (can’t use bold text though) --><?latexml package="xcolor"?>
+<?latexml package="svg" options="clean"?>
+<?latexml package="geometry" options="letterpaper,margin=1in"?>
+<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% --><!--  %This is a special package and its settings for displaying computer code in a LaTeX file --><?latexml package="listings"?>
+<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% --><?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <resource src="ltx-listings.css" type="text/css"/>
+  <title><text font="sansserif">PageRank with Eigenvectors</text> <break/><text font="smallcaps">cla365 technical report </text></title>
+  <creator role="author">
+    <personname>Nathaniel Reimer</personname>
+  </creator>
+  <creator before="  " role="author">
+    <personname>Preston Locke</personname>
+  </creator>
+  <date role="creation">April 30, 2022</date>
+  <abstract name="Abstract">
+    <p>In this report we examine the PageRank algorithm by showing that the Google Matrix is stochastic. We then present R code that implements the PageRank algorithm and demonstrate it on a simple network. As an extension, we explore some permutations on this network as well as the implications of changing the random jump probability (<Math mode="inline" tex="q" text="q" xml:id="m1">
+        <XMath>
+          <XMTok font="italic" role="UNKNOWN">q</XMTok>
+        </XMath>
+      </Math>)</p>
+  </abstract>
+<!--  %**** TRTemplate.tex Line 50 **** -->  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Implementing PageRank</title>
+    <subsection inlist="toc" xml:id="S1.SS1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="autoref">subsection 1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
+      <title><tag close=" ">1.1</tag>Proving the Google Matrix is Stochastic</title>
+      <para xml:id="S1.SS1.p1">
+        <p>Proving the Google matrix <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p1.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math> is stochastic requires showing that <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p1.m2">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math> is nonnegative
+and that each of its columns sum to <Math mode="inline" tex="1" text="1" xml:id="S1.SS1.p1.m3">
+            <XMath>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMath>
+          </Math>. We’ll start by proving that the matrix is
+nonnegative. Note that for each entry in <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p1.m4">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math>, we have the following:</p>
+      </para>
+      <para xml:id="S1.SS1.p2">
+        <equation xml:id="S1.Ex1">
+          <Math mode="display" tex="G_{ij}=q/n+A_{ji}(1-q)/n_{j}" text="G _ (i * j) = q / n + (A _ (j * i) * (1 - q)) / n _ j" xml:id="S1.Ex1.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">G</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMApp>
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                        <XMApp>
+                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMDual>
+                        <XMRef idref="S1.Ex1.m1.1"/>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMApp xml:id="S1.Ex1.m1.1">
+                            <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                            <XMTok meaning="1" role="NUMBER">1</XMTok>
+                            <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                          </XMApp>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                      <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+      <para xml:id="S1.SS1.p3">
+        <p>We already know the following facts about the variables in the expression above:</p>
+      </para>
+      <para xml:id="S1.SS1.p4">
+        <enumerate xml:id="S1.I1">
+          <item xml:id="S1.I1.i1">
+            <tags>
+              <tag>1.</tag>
+              <tag role="autoref">item 1</tag>
+              <tag role="refnum">1</tag>
+              <tag role="typerefnum">item 1</tag>
+            </tags>
+            <para xml:id="S1.I1.i1.p1">
+              <p><Math mode="inline" tex="0\leq q\leq 1" text="0 &lt;= q &lt;= 1" xml:id="S1.I1.i1.p1.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="multirelation"/>
+                      <XMTok meaning="0" role="NUMBER">0</XMTok>
+                      <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                      <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i2">
+            <tags>
+              <tag>2.</tag>
+              <tag role="autoref">item 2</tag>
+              <tag role="refnum">2</tag>
+              <tag role="typerefnum">item 2</tag>
+            </tags>
+            <para xml:id="S1.I1.i2.p1">
+              <p><Math mode="inline" tex="n&gt;0" text="n &gt; 0" xml:id="S1.I1.i2.p1.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                      <XMTok meaning="0" role="NUMBER">0</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math>
+<!--  %**** TRTemplate.tex Line 75 **** --></p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i3">
+            <tags>
+              <tag>3.</tag>
+              <tag role="autoref">item 3</tag>
+              <tag role="refnum">3</tag>
+              <tag role="typerefnum">item 3</tag>
+            </tags>
+            <para xml:id="S1.I1.i3.p1">
+              <p><Math mode="inline" tex="A_{ji}\in\{0,1\}" text="A _ (j * i) element-of set@(0, 1)" xml:id="S1.I1.i3.p1.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                        <XMApp>
+                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="set"/>
+                          <XMRef idref="S1.I1.i3.p1.m1.1"/>
+                          <XMRef idref="S1.I1.i3.p1.m1.2"/>
+                        </XMApp>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">{</XMTok>
+                          <XMTok meaning="0" role="NUMBER" xml:id="S1.I1.i3.p1.m1.1">0</XMTok>
+                          <XMTok role="PUNCT">,</XMTok>
+                          <XMTok meaning="1" role="NUMBER" xml:id="S1.I1.i3.p1.m1.2">1</XMTok>
+                          <XMTok role="CLOSE" stretchy="false">}</XMTok>
+                        </XMWrap>
+                      </XMDual>
+                    </XMApp>
+                  </XMath>
+                </Math></p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i4">
+            <tags>
+              <tag>4.</tag>
+              <tag role="autoref">item 4</tag>
+              <tag role="refnum">4</tag>
+              <tag role="typerefnum">item 4</tag>
+            </tags>
+            <para xml:id="S1.I1.i4.p1">
+              <p><Math mode="inline" tex="n_{j}=\sum_{i=1}^{n}A_{ji}" text="n _ j = ((sum _ (i = 1)) ^ n)@(A _ (j * i))" xml:id="S1.I1.i4.p1.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                      </XMApp>
+                      <XMApp>
+                        <XMApp>
+                          <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                          <XMApp>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                            <XMTok mathstyle="text" meaning="sum" role="SUMOP" scriptpos="post">∑</XMTok>
+                            <XMApp>
+                              <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
+                              <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                              <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                            </XMApp>
+                          </XMApp>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                        </XMApp>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                          <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                          <XMApp>
+                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                          </XMApp>
+                        </XMApp>
+                      </XMApp>
+                    </XMApp>
+                  </XMath>
+                </Math></p>
+            </para>
+          </item>
+        </enumerate>
+      </para>
+      <para xml:id="S1.SS1.p5">
+        <p>From facts 1, 2, and 3, we also know that <Math mode="inline" tex="q/n" text="q / n" xml:id="S1.SS1.p5.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP">/</XMTok>
+                <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>, <Math mode="inline" tex="A_{ji}" text="A _ (j * i)" xml:id="S1.SS1.p5.m2">
+            <XMath>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>, and <Math mode="inline" tex="(1-q)" text="1 - q" xml:id="S1.SS1.p5.m3">
+            <XMath>
+              <XMDual>
+                <XMRef idref="S1.SS1.p5.m3.1"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="S1.SS1.p5.m3.1">
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                    <XMTok meaning="1" role="NUMBER">1</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMath>
+          </Math> are all
+nonnegative numbers. And then, by facts 3 and 4, <Math mode="inline" tex="n_{j}" text="n _ j" xml:id="S1.SS1.p5.m4">
+            <XMath>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> must also be nonnegative. Therefore,
+we can say that the entire expression is nonnegative, and thus, each entry in <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p5.m5">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math> is
+nonnegative by definition.</p>
+      </para>
+      <para xml:id="S1.SS1.p6">
+        <p>Next, we show that each column in <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p6.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math> sums to <Math mode="inline" tex="1" text="1" xml:id="S1.SS1.p6.m2">
+            <XMath>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMath>
+          </Math>, or in other words, that for each
+<Math mode="inline" tex="j\in\{1,2,...,n\}" text="j element-of set@(1, 2, ldots, n)" xml:id="S1.SS1.p6.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                <XMTok font="italic" role="UNKNOWN">j</XMTok>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="set"/>
+                    <XMRef idref="S1.SS1.p6.m3.1"/>
+                    <XMRef idref="S1.SS1.p6.m3.2"/>
+                    <XMRef idref="S1.SS1.p6.m3.3"/>
+                    <XMRef idref="S1.SS1.p6.m3.4"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">{</XMTok>
+                    <XMTok meaning="1" role="NUMBER" xml:id="S1.SS1.p6.m3.1">1</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="2" role="NUMBER" xml:id="S1.SS1.p6.m3.2">2</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok name="ldots" role="ID" xml:id="S1.SS1.p6.m3.3">…</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S1.SS1.p6.m3.4">n</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">}</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMApp>
+            </XMath>
+          </Math> we show that:</p>
+      </para>
+      <para xml:id="S1.SS1.p7">
+        <equation xml:id="S1.Ex2">
+          <Math mode="display" tex="\sum_{i=1}^{n}q/n+A_{ji}(1-q)/n_{j}=1" text="((sum _ (i = 1)) ^ n)@(q / n) + (A _ (j * i) * (1 - q)) / n _ j = 1" xml:id="S1.Ex2.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMApp>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                        <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
+                        <XMApp>
+                          <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                          <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok meaning="divide" role="MULOP">/</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                        <XMApp>
+                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMDual>
+                        <XMRef idref="S1.Ex2.m1.1"/>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMApp xml:id="S1.Ex2.m1.1">
+                            <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                            <XMTok meaning="1" role="NUMBER">1</XMTok>
+                            <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                          </XMApp>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                      <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+      <para xml:id="S1.SS1.p8">
+        <p>The first term in the summation can be pulled out because it’s easy to see that <Math mode="inline" tex="q/n" text="q / n" xml:id="S1.SS1.p8.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP">/</XMTok>
+                <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+added <Math mode="inline" tex="n" text="n" xml:id="S1.SS1.p8.m2">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">n</XMTok>
+            </XMath>
+          </Math> times will just equal <Math mode="inline" tex="q" text="q" xml:id="S1.SS1.p8.m3">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math>. We can also pull out the expression
+<Math mode="inline" tex="((1-q)/n_{j})" text="(1 - q) / n _ j" xml:id="S1.SS1.p8.m4">
+            <XMath>
+              <XMDual>
+                <XMRef idref="S1.SS1.p8.m4.1"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="S1.SS1.p8.m4.1">
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMDual>
+                      <XMRef idref="S1.SS1.p8.m4.1.1"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S1.SS1.p8.m4.1.1">
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMTok meaning="1" role="NUMBER">1</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                      <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMath>
+          </Math> from the summation, because everything in it is a constant with
+respect to <Math mode="inline" tex="i" text="i" xml:id="S1.SS1.p8.m5">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">i</XMTok>
+            </XMath>
+          </Math>. Doing these two things gives us the below:</p>
+      </para>
+      <para xml:id="S1.SS1.p9">
+        <equation xml:id="S1.Ex3">
+          <Math mode="display" tex="q+((1-q)/n_{j})\sum_{i=1}^{n}A_{ji}" text="q + ((1 - q) / n _ j) * ((sum _ (i = 1)) ^ n)@(A _ (j * i))" xml:id="S1.Ex3.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMDual>
+                    <XMRef idref="S1.Ex3.m1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="S1.Ex3.m1.1">
+                        <XMTok meaning="divide" role="MULOP">/</XMTok>
+                        <XMDual>
+                          <XMRef idref="S1.Ex3.m1.1.1"/>
+                          <XMWrap>
+                            <XMTok role="OPEN" stretchy="false">(</XMTok>
+                            <XMApp xml:id="S1.Ex3.m1.1.1">
+                              <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                              <XMTok meaning="1" role="NUMBER">1</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                            </XMApp>
+                            <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                          </XMWrap>
+                        </XMDual>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                          <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                  <XMApp>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                        <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
+                        <XMApp>
+                          <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                          <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                      <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+<!--  %**** TRTemplate.tex Line 100 **** -->      <para xml:id="S1.SS1.p10">
+        <p>Now, using fact 4 from the first part of our proof, we can simplify <Math mode="inline" tex="\sum_{i=1}^{n}A_{ji}" text="((sum _ (i = 1)) ^ n)@(A _ (j * i))" xml:id="S1.SS1.p10.m1">
+            <XMath>
+              <XMApp>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                    <XMTok mathstyle="text" meaning="sum" role="SUMOP" scriptpos="post">∑</XMTok>
+                    <XMApp>
+                      <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                      <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+to <Math mode="inline" tex="n_{j}" text="n _ j" xml:id="S1.SS1.p10.m2">
+            <XMath>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> and finish simplifying:</p>
+      </para>
+      <para xml:id="S1.SS1.p11">
+        <equation xml:id="S1.Ex4">
+          <Math mode="display" tex="q+((1-q)/n_{j})n_{j}" text="q + ((1 - q) / n _ j) * n _ j" xml:id="S1.Ex4.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMDual>
+                    <XMRef idref="S1.Ex4.m1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="S1.Ex4.m1.1">
+                        <XMTok meaning="divide" role="MULOP">/</XMTok>
+                        <XMDual>
+                          <XMRef idref="S1.Ex4.m1.1.1"/>
+                          <XMWrap>
+                            <XMTok role="OPEN" stretchy="false">(</XMTok>
+                            <XMApp xml:id="S1.Ex4.m1.1.1">
+                              <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                              <XMTok meaning="1" role="NUMBER">1</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                            </XMApp>
+                            <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                          </XMWrap>
+                        </XMDual>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                          <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                    <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+        <equation xml:id="S1.Ex5">
+          <Math mode="display" tex="q+(1-q)" text="q + (1 - q)" xml:id="S1.Ex5.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                <XMDual>
+                  <XMRef idref="S1.Ex5.m1.1"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="S1.Ex5.m1.1">
+                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+        <equation xml:id="S1.Ex6">
+          <Math mode="display" tex="1" text="1" xml:id="S1.Ex6.m1">
+            <XMath>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+      <para xml:id="S1.SS1.p12">
+        <p>With that, we have successfully shown that <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p12.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math> is a nonnegative matrix whose columns sum
+to <Math mode="inline" tex="1" text="1" xml:id="S1.SS1.p12.m2">
+            <XMath>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMath>
+          </Math>, so we have proven that <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p12.m3">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math> is stochastic.</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="autoref">subsection 1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
+      <title><tag close=" ">1.2</tag>Calculating the Google Matrix and Page Ranks</title>
+      <para xml:id="S1.SS2.p1">
+        <p>To calculate page ranks for a given network of pages, we can use the fact that <Math mode="inline" tex="G" text="G" xml:id="S1.SS2.p1.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math> is
+stochastic and find its dominant eigenvector, which will give us the rankings. If we
+scale that eigenvector so that its entries sum to <Math mode="inline" tex="1" text="1" xml:id="S1.SS2.p1.m2">
+            <XMath>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMath>
+          </Math>, we’ll have our answer. To do
+this, we’ve written two R functions, <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">GoogleMatrix</text> and <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">PageRankVector</text>,
+which take in an <Math mode="inline" tex="n\times n" text="n * n" xml:id="S1.SS2.p1.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">×</XMTok>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> adjacency matrix <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">adj</text> and output, respectively,
+the <Math mode="inline" tex="n\times n" text="n * n" xml:id="S1.SS2.p1.m4">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">×</XMTok>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> Google matrix of the network and a vector of page ranks given the value
+of <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">q</text> (which defaults to <Math mode="inline" tex="0.15" text="0.15" xml:id="S1.SS2.p1.m5">
+            <XMath>
+              <XMTok meaning="0.15" role="NUMBER">0.15</XMTok>
+            </XMath>
+          </Math>).
+<!--  %**** TRTemplate.tex Line 125 **** --></p>
+      </para>
+      <para xml:id="S1.SS2.p2">
+        <verbatim font="typewriter">
+GoogleMatrix = function(adj, q=0.15) {
+  n = dim(adj)[1]
+  G = matrix(nrow=n, ncol=n)
+
+  for (j in 1:n) {
+    # Get the sum of row j
+    n.j = sum(adj[j,])
+
+    for (i in 1:n) {
+      # Calculate the ijth entry of G
+      G[i,j] = q/n + adj[j,i] * (1 - q) / n.j
+    }
+  }
+
+  return(G)
+}
+
+PageRankVector = function(adj, q=0.15) {
+  G = GoogleMatrix(adj, q=q)
+
+  # Find the dominant eigenvector of G
+  p = eigen(G)$vectors[,1]
+
+  # Return the normalized version (inf. norm)
+  return(p / sum(p))
+}
+</verbatim>
+      </para>
+      <figure inlist="lof" labels="LABEL:fig:network1" placement="H" xml:id="S1.F1">
+        <tags>
+          <tag>Figure 1</tag>
+          <tag role="autoref">Figure 1</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">Figure 1</tag>
+        </tags>
+        <equation xml:id="S1.Ex7">
+          <graphics candidates="images/network-1.png" class="ltx_markedasmath" graphic="images/network-1.png" options="width=144.54pt" xml:id="S1.Ex7.m1.g1"/>
+        </equation>
+        <toccaption><tag close=" ">1</tag>Network of 15 pages, taken from page 550 of the textbook.</toccaption>
+        <caption><tag close=": ">Figure 1</tag>Network of 15 pages, taken from page 550 of the textbook.</caption>
+      </figure>
+      <para xml:id="S1.SS2.p3">
+        <p>We can test these functions on the network in <ref class="ltx_refmacro_autoref" labelref="LABEL:fig:network1" show="autoref"/> that is taken from
+the textbook. The result of running <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">GoogleMatrix</text> is shown in <ref class="ltx_refmacro_autoref" labelref="LABEL:appendix:googlematrix" show="autoref"/>, but the result of running <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">PageRankVector</text> is
+shown below:</p>
+      </para>
+      <para xml:id="S1.SS2.p4">
+        <verbatim font="typewriter" fontsize="90%">
+&gt; A = rbind(
++     c(0,1,0,0,0,0,0,0,1,0,0,0,0,0,0),
++     c(0,0,1,0,1,0,1,0,0,0,0,0,0,0,0),
++     c(0,1,0,0,0,1,0,1,0,0,0,0,0,0,0),
++     c(0,0,1,0,0,0,0,0,0,0,0,1,0,0,0),
++     c(1,0,0,0,0,0,0,0,0,1,0,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,0,1,1,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,0,1,1,0,0,0,0),
++     c(0,0,0,1,0,0,0,0,0,0,1,0,0,0,0),
++     c(0,0,0,0,1,1,0,0,0,1,0,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,0,0,0,0,1,0,0),
++     c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
++     c(0,0,0,0,0,0,1,1,0,0,1,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,1,0,0,0,0,1,0),
++     c(0,0,0,0,0,0,0,0,0,1,1,0,1,0,1),
++     c(0,0,0,0,0,0,0,0,0,0,0,1,0,1,0)
++ )
+&gt; PageRankVector(A)
+ [1] 0.027 0.030 0.030 0.027 0.040 0.040 0.040 0.040 0.075 0.106 0.106 0.075 0.125 0.116 0.125
+</verbatim>
+      </para>
+      <para xml:id="S1.SS2.p5">
+        <p>Higher numbers in the PageRank vector correspond to higher rankings. So, using the PageRank
+method with <Math mode="inline" tex="q" text="q" xml:id="S1.SS2.p5.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math>=.15 makes 13 and 15 the highest ranked websites and 1 and 4 the lowest ranked.</p>
+      </para>
+    </subsection>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="autoref">section 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Further Exploration</title>
+    <subsection inlist="toc" xml:id="S2.SS1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="autoref">subsection 2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
+      <title><tag close=" ">2.1</tag>Other Values of q</title>
+      <para xml:id="S2.SS1.p1">
+        <p>The jump probability, <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p1.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math>, is the probability that a web-surfer chooses any random website rather than clicking one of the links on their current website. We can illustrate this using the equation for the entries to the Google matrix <Math mode="inline" tex="G" text="G" xml:id="S2.SS1.p1.m2">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">G</XMTok>
+            </XMath>
+          </Math>.
+<!--  %**** TRTemplate.tex Line 200 **** --></p>
+        <equation xml:id="S2.Ex8">
+          <Math mode="display" tex="G_{ij}=\frac{q}{n}+A_{ij}(1-q)/n_{j}" text="G _ (i * j) = q / n + (A _ (i * j) * (1 - q)) / n _ j" xml:id="S2.Ex8.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">G</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMApp>
+                    <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                    <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                        <XMApp>
+                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMDual>
+                        <XMRef idref="S2.Ex8.m1.1"/>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMApp xml:id="S2.Ex8.m1.1">
+                            <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                            <XMTok meaning="1" role="NUMBER">1</XMTok>
+                            <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                          </XMApp>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                      <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+        <p>If <Math mode="inline" tex="q=1" text="q = 1" xml:id="S2.SS1.p1.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">q</XMTok>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> then <Math mode="inline" tex="G_{ij}=\frac{q}{n}" text="G _ (i * j) = q / n" xml:id="S2.SS1.p1.m4">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">G</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMApp>
+                  <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">q</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math> since the other term is multiplied by 0. As we expect, the probability of ending up at any particular website is just <Math mode="inline" tex="1/n" text="1 / n" xml:id="S2.SS1.p1.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP">/</XMTok>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+                <XMTok font="italic" role="UNKNOWN">n</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> where <Math mode="inline" tex="n" text="n" xml:id="S2.SS1.p1.m6">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">n</XMTok>
+            </XMath>
+          </Math> is the number of websites: after visiting a website a web-surfer simply chooses another website at random from the list. We use the image() function in R to visualize the page rank vector for different values of <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p1.m7">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math>. In <ref class="ltx_refmacro_autoref" labelref="LABEL:fig:pagerank1" show="autoref"/>, higher values in the PageRank vector are in yellow and lower values are in dark blue.</p>
+      </para>
+      <figure inlist="lof" labels="LABEL:fig:pagerank1" placement="H" xml:id="S2.F2">
+        <tags>
+          <tag>Figure 2</tag>
+          <tag role="autoref">Figure 2</tag>
+          <tag role="refnum">2</tag>
+          <tag role="typerefnum">Figure 2</tag>
+        </tags>
+        <equation xml:id="S2.Ex9">
+          <graphics candidates="images/pagerank_Aq_v2.svg" class="ltx_markedasmath" graphic="images/pagerank_Aq_v2.svg" options="width=361.35pt" xml:id="S2.Ex9.m1.g1"/>
+        </equation>
+        <toccaption><tag close=" ">2</tag>Heatmap of PageRank vectors at different q values.</toccaption>
+        <caption><tag close=": ">Figure 2</tag>Heatmap of PageRank vectors at different q values.</caption>
+      </figure>
+      <para xml:id="S2.SS1.p2">
+        <p>The result we obtain from <ref class="ltx_refmacro_autoref" labelref="LABEL:fig:pagerank1" show="autoref"/> is precisely what we expect. At a <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p2.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math> value of 1 all of the websites’ entries in the PageRank vector are exactly equal (they are the same color). Moreover, as we decrease <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p2.m2">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math> differences appear and become more pronounced. When <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p2.m3">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math> is zero and the probability of ending up at any given website is based solely on the network structure: There are no random jumps. For PageRank, Google used a q value of .15 so that network structure is the primary determining factor but some random jumping occurs.
+This choice has a number of interesting implications for our network. We first observed that while 15, 14, and 13 have similar values when <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p2.m4">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math> is zero, when <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p2.m5">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math> reaches .15 website 14 has fallen further than 13 and 15. Additionally, 2 and 3 have lower values when <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p2.m6">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math> is zero but higher values when <Math mode="inline" tex="q" text="q" xml:id="S2.SS1.p2.m7">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+            </XMath>
+          </Math> is .15. It would be unrealistic to assume there is no random jumping when someone is surfing the web and not accounting for it leads to an incorrect page rank, especially in the case of 1, 2, 3, and 4. Why, exactly, these changes happen in this network is certainly worthy of further study. It may come about because of the symmetric connections between 2 and 3 and those between 13, 14, and 15.</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S2.SS2">
+      <tags>
+        <tag>2.2</tag>
+        <tag role="autoref">subsection 2.2</tag>
+        <tag role="refnum">2.2</tag>
+        <tag role="typerefnum">§2.2</tag>
+      </tags>
+      <title><tag close=" ">2.2</tag>Removing a Node</title>
+      <figure inlist="lof" labels="LABEL:fig:network3" placement="H" xml:id="S2.F3">
+        <tags>
+          <tag>Figure 3</tag>
+          <tag role="autoref">Figure 3</tag>
+          <tag role="refnum">3</tag>
+          <tag role="typerefnum">Figure 3</tag>
+        </tags>
+        <equation xml:id="S2.Ex10">
+          <graphics candidates="images/network-3.png" class="ltx_markedasmath" graphic="images/network-3.png" options="width=144.54pt" xml:id="S2.Ex10.m1.g1"/>
+        </equation>
+<!--  %**** TRTemplate.tex Line 225 **** -->        <toccaption><tag close=" ">3</tag>Network with Page 10 removed.</toccaption>
+        <caption><tag close=": ">Figure 3</tag>Network with Page 10 removed.</caption>
+      </figure>
+      <para xml:id="S2.SS2.p1">
+        <p>What happens to the ranks of the other pages if we remove a page from the network?
+For a start, we can predict that the effect on the other page ranks will be more
+pronounced when a page with a higher rank is removed. Being a probability
+distribution, the page rank vector needs to add to <Math mode="inline" tex="1" text="1" xml:id="S2.SS2.p1.m1">
+            <XMath>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMath>
+          </Math>, and thus the value of the
+removed page’s rank will need to be redistributed to the other pages somehow, in
+order to maintain the sum of <Math mode="inline" tex="1" text="1" xml:id="S2.SS2.p1.m2">
+            <XMath>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMath>
+          </Math>. The higher the removed page’s rank, the more
+value will be redistributed to the other pages.</p>
+      </para>
+      <para xml:id="S2.SS2.p2">
+        <p>Exploring this theme of removing highly-ranked pages further, let’s look at a concrete
+example using the 15-page example from before. This time, we’ll remove page 10 to get
+the network shown in <ref class="ltx_refmacro_autoref" labelref="LABEL:fig:network3" show="autoref"/>. Below are the page ranks we calculated
+for the modified network:</p>
+      </para>
+      <para xml:id="S2.SS2.p3">
+        <verbatim font="typewriter">
+&gt; PageRankVector(A[c(1:9, 11:15), c(1:9, 11:15)])
+ [1] 0.047 0.041 0.036 0.032 0.043 0.041 0.052 0.050 0.048 0.171 0.104 0.041 0.107 0.186
+</verbatim>
+      </para>
+      <para xml:id="S2.SS2.p4">
+        <p>Comparing these rankings to those of the 15-page network, we see that almost all of the
+pages rose in rank, except for pages 9, 13, and 14. Note that page 13 was pointed to by
+page 10, and page 13 points to pages 9 and 14. It seems that the popularity of page 10
+contributed to propping up the rankings of pages 9, 13, and 14, so when it was removed,
+<!--  %**** TRTemplate.tex Line 250 **** -->those page rankings fell.</p>
+      </para>
+      <para xml:id="S2.SS2.p5">
+        <p>It should be noted, however, that in the given network, there is a directed path from
+page 10 to every other page in the network, meaning that to some degree, all
+pages are pointed to by page 10, implying that page 10’s popularity should have had
+some effect of propping those pages up, if only small. We believe the reason why the
+rankings of the other pages did not fall is a combination of their degree of separation from
+page 10 (longer paths yield a smaller influence on ranking) and other factors
+(like a change in a page’s ratio of in-links to out-links).</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S2.SS3">
+      <tags>
+        <tag>2.3</tag>
+        <tag role="autoref">subsection 2.3</tag>
+        <tag role="refnum">2.3</tag>
+        <tag role="typerefnum">§2.3</tag>
+      </tags>
+      <title><tag close=" ">2.3</tag>Rank Strategy</title>
+      <para xml:id="S2.SS3.p1">
+        <p>We then considered a possible strategy for a website to increase its PageRank. Specifically, what happens when websites 2 and 12 favor linking to website 7. We model this by changing the corresponding entries in the adjacency matrix from 1 to 2. In <ref class="ltx_refmacro_autoref" labelref="LABEL:fig:network2" show="autoref"/> we show this change by bolding these two links. We then calculated the PageRank vector <Math mode="inline" tex="p_{2}" text="p _ 2" xml:id="S2.SS3.p1.m1">
+            <XMath>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> for the modified matrix and calculated a ratio of it and the original PageRank vector <Math mode="inline" tex="p_{1}" text="p _ 1" xml:id="S2.SS3.p1.m2">
+            <XMath>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> to obtain a vector <Math mode="inline" tex="\frac{p_{2}}{p_{1}}" text="p _ 2 / p _ 1" xml:id="S2.SS3.p1.m3">
+            <XMath>
+              <XMApp>
+                <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">p</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">p</XMTok>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>.</p>
+      </para>
+      <para xml:id="S2.SS3.p2">
+        <equation xml:id="S2.Ex11">
+          <Math mode="display" tex="(p_{2}/p_{1})^{T}=" text="(p _ 2 / p _ 1) ^ T = absent" xml:id="S2.Ex11.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMDual>
+                    <XMRef idref="S2.Ex11.m1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="S2.Ex11.m1.1">
+                        <XMTok meaning="divide" role="MULOP">/</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                          <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                          <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                        </XMApp>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                          <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                          <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                        </XMApp>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">T</XMTok>
+                </XMApp>
+                <XMTok meaning="absent"/>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+        <verbatim font="typewriter" fontsize="90%">
+      [,1]  [,2]  [,3]  [,4]  [,5]  [,6] [,7]  [,8] [,9] [,10] [,11] [,12] [,13] [,14] [,15]
+[1,] 0.969 0.954 0.878 0.892 0.951 0.986 1.33 0.829 1.02  1.05 0.971  0.97  1.04  1.01 0.981
+</verbatim>
+      </para>
+      <figure inlist="lof" labels="LABEL:fig:network2" placement="H" xml:id="S2.F4">
+        <tags>
+          <tag>Figure 4</tag>
+          <tag role="autoref">Figure 4</tag>
+          <tag role="refnum">4</tag>
+          <tag role="typerefnum">Figure 4</tag>
+        </tags>
+        <graphics candidates="images/network-2.png" class="ltx_centering" graphic="images/network-2.png" options="width=144.54pt" xml:id="S2.F4.g1"/>
+<!--  %**** TRTemplate.tex Line 275 **** -->        <toccaption class="ltx_centering"><tag close=" ">4</tag>Modified network with more prominent links to website 7.</toccaption>
+        <caption class="ltx_centering"><tag close=": ">Figure 4</tag>Modified network with more prominent links to website 7.</caption>
+      </figure>
+      <para xml:id="S2.SS3.p3">
+        <p>Unsurprisingly, strategy has benefited page 7’s value in the PageRank vector. We decided to take a closer look at how the strategy impacted the values of other sites. We immediately noticed that while 11 and 10 are both linked to by page 7, only page 10’s value increased. This can be explained by examining the network structure. In the google matrix for the modified network the probability of moving from 12 to 7 is increased, this means that the probability of moving from 12 to 11 or 4 is decreased. So even though 11 may benefit from being linked to by 7 this is out weighed by the negative effect of being deprioritized by 12. 10 does not face this negative effect and thus benefits.</p>
+      </para>
+      <pagination role="newpage"/>
+    </subsection>
+  </section>
+  <appendix inlist="toc" labels="LABEL:appendix:googlematrix" xml:id="A1">
+    <tags>
+      <tag>Appendix A</tag>
+      <tag role="autoref">Appendix A</tag>
+      <tag role="refnum">A</tag>
+      <tag role="typerefnum">Appendix A</tag>
+    </tags>
+    <title><tag close=" ">Appendix A</tag>Appendix: Unmodified 15-Page Google Matrix</title>
+    <toctitle><tag close=" ">A</tag>Appendix: Unmodified 15-Page Google Matrix</toctitle>
+    <para xml:id="A1.p1">
+      <verbatim font="typewriter" fontsize="90%">
+&gt; GoogleMatrix(A)
+      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14] [,15]
+ [1,] 0.01 0.01 0.01 0.01 0.43 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [2,] 0.43 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [3,] 0.01 0.29 0.01 0.43 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [4,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.43 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [5,] 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01 0.29  0.01  0.01  0.01  0.01  0.01  0.01
+ [6,] 0.01 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.29  0.01  0.01  0.01  0.01  0.01  0.01
+ [7,] 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.29  0.01  0.01  0.01
+ [8,] 0.01 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.29  0.01  0.01  0.01
+ [9,] 0.43 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.43  0.01  0.01
+[10,] 0.01 0.01 0.01 0.01 0.43 0.43 0.43 0.01 0.29  0.01  0.01  0.01  0.01  0.22  0.01
+[11,] 0.01 0.01 0.01 0.01 0.01 0.43 0.43 0.43 0.01  0.01  0.01  0.29  0.01  0.22  0.01
+[12,] 0.01 0.01 0.01 0.43 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.43
+[13,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.86  0.01  0.01  0.01  0.22  0.01
+[14,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.43  0.01  0.43
+[15,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.86  0.01  0.01  0.22  0.01
+</verbatim>
+    </para>
+  </appendix>
+</document>

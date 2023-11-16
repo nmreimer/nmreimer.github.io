@@ -74,7 +74,6 @@ get_normal_methods <- function(data, outcome_formula, exposure_formula) {
 }
 ```
 
-
 ```{r ignore this}
 limit_check <- function(data, exposure_formula, bad_exposure_formula) {
   ps_model <- glm(exposure_formula, family = "binomial")
@@ -98,7 +97,6 @@ limit_check <- function(data, exposure_formula, bad_exposure_formula) {
 
 # limit_check(data, A ~ X + N + Z, A~ 1)
 ```
-
 
 ```{r get dr parts 2&3}
 get_dr_parts2_3 <- function(data, outcome_formula, exposure_formula) {
@@ -282,8 +280,7 @@ Doubly Robust estimation allows researchers to take advantage of both an outcome
 
 \end{aligned}
 ```
-
-Or, alternatively: 
+Or, alternatively:
 
 ```{=tex}
 \begin{aligned}
@@ -303,9 +300,6 @@ Or, alternatively:
 
 \end{aligned}
 ```
-
-
-
 Where
 
 -   $\hat{y}_1(\textrm{covariates}_i)$ are the predicted values for each individual $i$ with treatment $1$.
@@ -352,16 +346,13 @@ ggdag(dag)  +
   
 ```
 
-
-
 ### Part C: A Really Bad Estimator
 
 Each of the three parts of the doubly robust estimator is itself an estimator.
 
 $$
  (\textrm{C}) \quad\quad \frac{1}{n}\sum \frac{\hat{y}_1(\textrm{covariates}_i)*A_i}{\hat{e}(\textrm{covariates}_i)} - \frac{1}{n}\sum \frac{\hat{y}_0(\textrm{covariates}_i)*(1- A_i)}{1-\hat{e}(\textrm{covariates}_i)}
-$$
-This produces an accurate estimate when both the treatment and outcome models are correct. So, it is essentially the opposite of a doubly robust estimator. If either model is wrong the estimate will be incorrect.
+$$ This produces an accurate estimate when both the treatment and outcome models are correct. So, it is essentially the opposite of a doubly robust estimator. If either model is wrong the estimate will be incorrect.
 
 ```{r}
 c_estimate1 <- as.data.frame(t(get_dr_partC(data, Y ~ A + W + M + Z, A ~ X + Z + N)))
@@ -374,7 +365,6 @@ c_estimates <- as.data.frame(cbind(c_estimate1, c_estimate2, c_estimate3, c_esti
 kable(c_estimates, escape = FALSE, caption = "", col.names = NULL, digits = tabledigits)
 ```
 
-
 ### Part B: Inverse Probability Weighting
 
 An IPW estimator of the average causal effect is:
@@ -384,7 +374,6 @@ $$
 $$
 
 Where $Y_i$ are the actual outcome values. If the treatment model is correct this will produce a correct estimate of average causal effect.
-
 
 ```{r}
 b_estimate1 <- as.data.frame(t(get_dr_partB(data, Y ~ A + W + M + Z, A ~ X + Z + N)))
@@ -396,7 +385,6 @@ rownames(b_estimate1) <- c("Outcome Formula", "Exposure Formula", "Outcome Model
 b_estimates <- as.data.frame(cbind(b_estimate1, b_estimate2, b_estimate3, b_estimate4))
 kable(b_estimates, escape = FALSE, caption = "", col.names = NULL, digits = tabledigits)
 ```
-
 
 #### Parts B and C cancel out when the outcome model is correct
 
@@ -455,15 +443,7 @@ a_estimates <- as.data.frame(cbind(a_estimate1, a_estimate2, a_estimate3, a_esti
 kable(a_estimates, escape = FALSE, caption = "", col.names = NULL, digits = tabledigits)
 ```
 
-
 #### Putting everything together
-
-
-
-
-
-
-
 
 So the full estimator is:
 
@@ -491,8 +471,7 @@ So the full estimator is:
 
 \end{aligned}
 ```
-
-Laid out like this, it is relatively simple to see how doubly robust estimation works. For example, if a researcher has an accurate exposure model and an inaccurate outcome model, $(\textrm{A})$ and $(\textrm{C})$ cancel each other out and we are left with just the accurate estimate based on the exposure model: $(\textrm{C})$. Take a little bit to think about the other possibilities yourself. 
+Laid out like this, it is relatively simple to see how doubly robust estimation works. For example, if a researcher has an accurate exposure model and an inaccurate outcome model, $(\textrm{A})$ and $(\textrm{C})$ cancel each other out and we are left with just the accurate estimate based on the exposure model: $(\textrm{C})$. Take a little bit to think about the other possibilities yourself.
 
 ### Testing Doubly Robust Estimation
 
@@ -517,7 +496,7 @@ kable(cbind(accurate, WrongExposureX, WrongExposureZ, VeryWrongExposure, inaccur
       digits = tabledigits)
 ```
 
-The real causal effect in our simulated data is 1. With inaccurate exposure models and an accurate outcome model we observe, just as we would expect, $(\textrm{B})$ and $(\textrm{C})$ cancel out and we are left with an estimate based on $(\textrm{A})$. When both models are inaccurate this does not happen. 
+The real causal effect in our simulated data is 1. With inaccurate exposure models and an accurate outcome model we observe, just as we would expect, $(\textrm{B})$ and $(\textrm{C})$ cancel out and we are left with an estimate based on $(\textrm{A})$. When both models are inaccurate this does not happen.
 
 ```{r}
 kable(cbind(accurate, WrongOutcome1, WrongOutcome2, WrongOutcome3, inaccurate, inaccurate2), 
@@ -525,8 +504,7 @@ kable(cbind(accurate, WrongOutcome1, WrongOutcome2, WrongOutcome3, inaccurate, i
       digits = tabledigits)
 ```
 
-When we have an accurate exposure and an inaccurate outcome model, $(\textrm{A})$ and $(\textrm{C})$ cancel out and we are left with an estimate based on $(\textrm{B})$. 
-
+When we have an accurate exposure and an inaccurate outcome model, $(\textrm{A})$ and $(\textrm{C})$ cancel out and we are left with an estimate based on $(\textrm{B})$.
 
 ## Sources {.appendix}
 

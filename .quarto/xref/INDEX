@@ -49,5 +49,8 @@
   },
   "projects/californiaedu/model.qmd": {
     "model.html": "09439bbc"
+  },
+  "projects/pagerank/index.qmd": {
+    "index.html": "4fa43c83"
   }
 }

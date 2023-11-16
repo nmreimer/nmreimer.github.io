@@ -7,7 +7,7 @@ about:
     - icon: github
       href: https://github.com/nmreimer
     - icon: linkedin
-      href: https://google.com
+      href: https://www.linkedin.com/in/nathaniel-reimer/
     - icon: envelope
       href: mailto:nreimer@macalester.edu
 ---

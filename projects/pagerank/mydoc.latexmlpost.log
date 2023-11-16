@@ -1,0 +1,13 @@
+latexmlpost (LaTeXML version 0.8.6) paginating /home/nmreimer/Documents/ProjectsInDS/nmreimer.github.io/projects/pagerank/mydoc.xml
+(post-processing...
+(Scan mydoc.html processing...
+Scan: DBStatus: 150/0 objects
+ 0.02 sec)
+(CrossRef mydoc.html processing... 0.01 sec)
+(Graphics mydoc.html 4 to process... 0.06 sec)
+(MathML::Presentation mydoc.html 60 to process...
+converted 60 Maths
+ 0.04 sec)
+(XSLT[using LaTeXML-html5.xsl] mydoc.html processing... 0.01 sec)
+(Writer mydoc.html processing... 0.00 sec) 0.13 sec)
+Postprocessing complete No obvious problems (reqd. 0.22s)

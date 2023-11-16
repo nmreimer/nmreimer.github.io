@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-04-30">
+<meta name="description" content="Implementing and Exploring a Simplified Version of the PageRank Algorithm">
+
+<title>Nathaniel Reimer - PageRank</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Nathaniel Reimer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html" rel="" target="">
+ <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html" rel="" target="">
+ <span class="menu-text">Projects</span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools ms-auto">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<div class="quarto-about-marquee">
+  <div class="about-image-container">
+  </div>
+  <div class="about-contents">
+    <header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">PageRank</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Data Science</div>
+    <div class="quarto-category">Linear Algebra</div>
+  </div>
+  </div>
+<div>
+  <div class="description">
+    Implementing and Exploring a Simplified Version of the PageRank Algorithm
+  </div>
+</div>
+<div class="quarto-title-meta">
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 30, 2022</p>
+    </div>
+  </div>
+  </div>
+</header> <main class="content" id="quarto-document-content">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+PageRank with Eigenvectors cla365 technical report
+</title>
+<!--Generated on Wed Nov 15 19:55:02 2023 by LaTeXML (version 0.8.6) http://dlmf.nist.gov/LaTeXML/.-->
+<!--Document created on April 30, 2022.-->
+<link rel="stylesheet" href="LaTeXML.css" type="text/css"> <link rel="stylesheet" href="ltx-article.css" type="text/css"> <link rel="stylesheet" href="ltx-listings.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<div class="ltx_page_main">
+<div class="ltx_page_content">
+<article class="ltx_document ltx_authors_1line">
+<h1 class="ltx_title ltx_title_document">
+<span class="ltx_text ltx_font_sansserif">PageRank with Eigenvectors</span> <br class="ltx_break"><span class="ltx_text ltx_font_smallcaps">cla365 technical report </span>
+</h1>
+<div class="ltx_authors">
+<p><span class="ltx_creator ltx_role_author"> <span class="ltx_personname">Nathaniel Reimer </span></span> <span class="ltx_author_before">  </span><span class="ltx_creator ltx_role_author"> <span class="ltx_personname">Preston Locke </span></span></p>
+</div>
+<div class="ltx_dates">
+(April 30, 2022)
+</div>
+<div class="ltx_abstract">
+<h6 class="ltx_title ltx_title_abstract">
+Abstract
+</h6>
+<p class="ltx_p">
+In this report we examine the PageRank algorithm by showing that the Google Matrix is stochastic. We then present R code that implements the PageRank algorithm and demonstrate it on a simple network. As an extension, we explore some permutations on this network as well as the implications of changing the random jump probability (<math id="m1" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math>)
+</p>
+</div>
+<section id="S1" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">1 </span>Implementing PageRank
+</h2>
+<section id="S1.SS1" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">1.1 </span>Proving the Google Matrix is Stochastic
+</h3>
+<div id="S1.SS1.p1" class="ltx_para">
+<p class="ltx_p">
+Proving the Google matrix <math id="S1.SS1.p1.m1" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> is stochastic requires showing that <math id="S1.SS1.p1.m2" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> is nonnegative and that each of its columns sum to <math id="S1.SS1.p1.m3" class="ltx_Math" alttext="1" display="inline"><mn>1</mn></math>. We’ll start by proving that the matrix is nonnegative. Note that for each entry in <math id="S1.SS1.p1.m4" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math>, we have the following:
+</p>
+</div>
+<div id="S1.SS1.p2" class="ltx_para">
+<table id="S1.Ex1" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S1.Ex1.m1" class="ltx_Math" alttext="G_{ij}=q/n+A_{ji}(1-q)/n_{j}" display="block"><mrow><msub><mi>G</mi><mrow><mi>i</mi><mo>⁢</mo><mi>j</mi></mrow></msub><mo>=</mo><mrow><mrow><mi>q</mi><mo>/</mo><mi>n</mi></mrow><mo>+</mo><mrow><mrow><msub><mi>A</mi><mrow><mi>j</mi><mo>⁢</mo><mi>i</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><msub><mi>n</mi><mi>j</mi></msub></mrow></mrow></mrow></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+</div>
+<div id="S1.SS1.p3" class="ltx_para">
+<p class="ltx_p">
+We already know the following facts about the variables in the expression above:
+</p>
+</div>
+<div id="S1.SS1.p4" class="ltx_para">
+<ol id="S1.I1" class="ltx_enumerate">
+<li id="S1.I1.i1" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">1.</span>
+<div id="S1.I1.i1.p1" class="ltx_para">
+<p class="ltx_p">
+<math id="S1.I1.i1.p1.m1" class="ltx_Math" alttext="0\leq q\leq 1" display="inline"><mrow><mn>0</mn><mo>≤</mo><mi>q</mi><mo>≤</mo><mn>1</mn></mrow></math>
+</p>
+</div>
+</li>
+<li id="S1.I1.i2" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">2.</span>
+<div id="S1.I1.i2.p1" class="ltx_para">
+<p class="ltx_p">
+<math id="S1.I1.i2.p1.m1" class="ltx_Math" alttext="n>0" display="inline"><mrow><mi>n</mi><mo>&gt;</mo><mn>0</mn></mrow></math>
+</p>
+</div>
+</li>
+<li id="S1.I1.i3" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">3.</span>
+<div id="S1.I1.i3.p1" class="ltx_para">
+<p class="ltx_p">
+<math id="S1.I1.i3.p1.m1" class="ltx_Math" alttext="A_{ji}\in\{0,1\}" display="inline"><mrow><msub><mi>A</mi><mrow><mi>j</mi><mo>⁢</mo><mi>i</mi></mrow></msub><mo>∈</mo><mrow><mo stretchy="false">{</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false">}</mo></mrow></mrow></math>
+</p>
+</div>
+</li>
+<li id="S1.I1.i4" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">4.</span>
+<div id="S1.I1.i4.p1" class="ltx_para">
+<p class="ltx_p">
+<math id="S1.I1.i4.p1.m1" class="ltx_Math" alttext="n_{j}=\sum_{i=1}^{n}A_{ji}" display="inline"><mrow><msub><mi>n</mi><mi>j</mi></msub><mo>=</mo><mrow><msubsup><mo largeop="true" symmetric="true">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></msubsup><msub><mi>A</mi><mrow><mi>j</mi><mo>⁢</mo><mi>i</mi></mrow></msub></mrow></mrow></math>
+</p>
+</div>
+</li>
+</ol>
+</div>
+<div id="S1.SS1.p5" class="ltx_para">
+<p class="ltx_p">
+From facts 1, 2, and 3, we also know that <math id="S1.SS1.p5.m1" class="ltx_Math" alttext="q/n" display="inline"><mrow><mi>q</mi><mo>/</mo><mi>n</mi></mrow></math>, <math id="S1.SS1.p5.m2" class="ltx_Math" alttext="A_{ji}" display="inline"><msub><mi>A</mi><mrow><mi>j</mi><mo>⁢</mo><mi>i</mi></mrow></msub></math>, and <math id="S1.SS1.p5.m3" class="ltx_Math" alttext="(1-q)" display="inline"><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow></math> are all nonnegative numbers. And then, by facts 3 and 4, <math id="S1.SS1.p5.m4" class="ltx_Math" alttext="n_{j}" display="inline"><msub><mi>n</mi><mi>j</mi></msub></math> must also be nonnegative. Therefore, we can say that the entire expression is nonnegative, and thus, each entry in <math id="S1.SS1.p5.m5" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> is nonnegative by definition.
+</p>
+</div>
+<div id="S1.SS1.p6" class="ltx_para">
+<p class="ltx_p">
+Next, we show that each column in <math id="S1.SS1.p6.m1" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> sums to <math id="S1.SS1.p6.m2" class="ltx_Math" alttext="1" display="inline"><mn>1</mn></math>, or in other words, that for each <math id="S1.SS1.p6.m3" class="ltx_Math" alttext="j\in\{1,2,...,n\}" display="inline"><mrow><mi>j</mi><mo>∈</mo><mrow><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mi mathvariant="normal">…</mi><mo>,</mo><mi>n</mi><mo stretchy="false">}</mo></mrow></mrow></math> we show that:
+</p>
+</div>
+<div id="S1.SS1.p7" class="ltx_para">
+<table id="S1.Ex2" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S1.Ex2.m1" class="ltx_Math" alttext="\sum_{i=1}^{n}q/n+A_{ji}(1-q)/n_{j}=1" display="block"><mrow><mrow><mrow><munderover><mo largeop="true" movablelimits="false" symmetric="true">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi>q</mi><mo>/</mo><mi>n</mi></mrow></mrow><mo>+</mo><mrow><mrow><msub><mi>A</mi><mrow><mi>j</mi><mo>⁢</mo><mi>i</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><msub><mi>n</mi><mi>j</mi></msub></mrow></mrow><mo>=</mo><mn>1</mn></mrow></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+</div>
+<div id="S1.SS1.p8" class="ltx_para">
+<p class="ltx_p">
+The first term in the summation can be pulled out because it’s easy to see that <math id="S1.SS1.p8.m1" class="ltx_Math" alttext="q/n" display="inline"><mrow><mi>q</mi><mo>/</mo><mi>n</mi></mrow></math> added <math id="S1.SS1.p8.m2" class="ltx_Math" alttext="n" display="inline"><mi>n</mi></math> times will just equal <math id="S1.SS1.p8.m3" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math>. We can also pull out the expression <math id="S1.SS1.p8.m4" class="ltx_Math" alttext="((1-q)/n_{j})" display="inline"><mrow><mo stretchy="false">(</mo><mrow><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow><mo>/</mo><msub><mi>n</mi><mi>j</mi></msub></mrow><mo stretchy="false">)</mo></mrow></math> from the summation, because everything in it is a constant with respect to <math id="S1.SS1.p8.m5" class="ltx_Math" alttext="i" display="inline"><mi>i</mi></math>. Doing these two things gives us the below:
+</p>
+</div>
+<div id="S1.SS1.p9" class="ltx_para">
+<table id="S1.Ex3" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S1.Ex3.m1" class="ltx_Math" alttext="q+((1-q)/n_{j})\sum_{i=1}^{n}A_{ji}" display="block"><mrow><mi>q</mi><mo>+</mo><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow><mo>/</mo><msub><mi>n</mi><mi>j</mi></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><munderover><mo largeop="true" movablelimits="false" symmetric="true">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>A</mi><mrow><mi>j</mi><mo>⁢</mo><mi>i</mi></mrow></msub></mrow></mrow></mrow></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+</div>
+<div id="S1.SS1.p10" class="ltx_para">
+<p class="ltx_p">
+Now, using fact 4 from the first part of our proof, we can simplify <math id="S1.SS1.p10.m1" class="ltx_Math" alttext="\sum_{i=1}^{n}A_{ji}" display="inline"><mrow><msubsup><mo largeop="true" symmetric="true">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></msubsup><msub><mi>A</mi><mrow><mi>j</mi><mo>⁢</mo><mi>i</mi></mrow></msub></mrow></math> to <math id="S1.SS1.p10.m2" class="ltx_Math" alttext="n_{j}" display="inline"><msub><mi>n</mi><mi>j</mi></msub></math> and finish simplifying:
+</p>
+</div>
+<div id="S1.SS1.p11" class="ltx_para">
+<table id="S1.Ex4" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S1.Ex4.m1" class="ltx_Math" alttext="q+((1-q)/n_{j})n_{j}" display="block"><mrow><mi>q</mi><mo>+</mo><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow><mo>/</mo><msub><mi>n</mi><mi>j</mi></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msub><mi>n</mi><mi>j</mi></msub></mrow></mrow></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+<table id="S1.Ex5" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S1.Ex5.m1" class="ltx_Math" alttext="q+(1-q)" display="block"><mrow><mi>q</mi><mo>+</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+<table id="S1.Ex6" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S1.Ex6.m1" class="ltx_Math" alttext="1" display="block"><mn>1</mn></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+</div>
+<div id="S1.SS1.p12" class="ltx_para">
+<p class="ltx_p">
+With that, we have successfully shown that <math id="S1.SS1.p12.m1" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> is a nonnegative matrix whose columns sum to <math id="S1.SS1.p12.m2" class="ltx_Math" alttext="1" display="inline"><mn>1</mn></math>, so we have proven that <math id="S1.SS1.p12.m3" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> is stochastic.
+</p>
+</div>
+</section>
+<section id="S1.SS2" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">1.2 </span>Calculating the Google Matrix and Page Ranks
+</h3>
+<div id="S1.SS2.p1" class="ltx_para">
+<p class="ltx_p">
+To calculate page ranks for a given network of pages, we can use the fact that <math id="S1.SS2.p1.m1" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> is stochastic and find its dominant eigenvector, which will give us the rankings. If we scale that eigenvector so that its entries sum to <math id="S1.SS2.p1.m2" class="ltx_Math" alttext="1" display="inline"><mn>1</mn></math>, we’ll have our answer. To do this, we’ve written two R functions, <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">GoogleMatrix</span> and <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">PageRankVector</span>, which take in an <math id="S1.SS2.p1.m3" class="ltx_Math" alttext="n\times n" display="inline"><mrow><mi>n</mi><mo>×</mo><mi>n</mi></mrow></math> adjacency matrix <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">adj</span> and output, respectively, the <math id="S1.SS2.p1.m4" class="ltx_Math" alttext="n\times n" display="inline"><mrow><mi>n</mi><mo>×</mo><mi>n</mi></mrow></math> Google matrix of the network and a vector of page ranks given the value of <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">q</span> (which defaults to <math id="S1.SS2.p1.m5" class="ltx_Math" alttext="0.15" display="inline"><mn>0.15</mn></math>).
+</p>
+</div>
+<div id="S1.SS2.p2" class="ltx_para">
+<pre class="ltx_verbatim ltx_font_typewriter">GoogleMatrix = function(adj, q=0.15) {
+  n = dim(adj)[1]
+  G = matrix(nrow=n, ncol=n)
+  for (j in 1:n) {
+    # Get the sum of row j
+    n.j = sum(adj[j,])
+    for (i in 1:n) {
+      # Calculate the ijth entry of G
+      G[i,j] = q/n + adj[j,i] * (1 - q) / n.j
+    }
+  }
+  return(G)
+}
+PageRankVector = function(adj, q=0.15) {
+  G = GoogleMatrix(adj, q=q)
+  # Find the dominant eigenvector of G
+  p = eigen(G)$vectors[,1]
+  # Return the normalized version (inf. norm)
+  return(p / sum(p))
+}
+</pre>
+</div>
+<figure id="S1.F1" class="ltx_figure figure">
+<table id="S1.Ex7" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<img src="images/network-1.png" id="S1.Ex7.m1.g1" class="ltx_graphics ltx_markedasmath figure-img" width="180" height="188" alt="Network of 15 pages, taken from page 550 of the textbook.">
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+<figcaption class="ltx_caption figure-caption">
+<span class="ltx_tag ltx_tag_figure">Figure 1: </span>Network of 15 pages, taken from page 550 of the textbook.
+</figcaption>
+</figure>
+<div id="S1.SS2.p3" class="ltx_para">
+<p class="ltx_p">
+We can test these functions on the network in <a href="#S1.F1" title="Figure 1 ‣ 1.2 Calculating the Google Matrix and Page Ranks ‣ 1 Implementing PageRank ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Figure&nbsp;1</span></a> that is taken from the textbook. The result of running <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">GoogleMatrix</span> is shown in <a href="#A1" title="Appendix A Appendix: Unmodified 15-Page Google Matrix ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Appendix&nbsp;A</span></a>, but the result of running <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">PageRankVector</span> is shown below:
+</p>
+</div>
+<div id="S1.SS2.p4" class="ltx_para">
+<pre class="ltx_verbatim ltx_font_typewriter" style="font-size:90%;">&gt; A = rbind(
++     c(0,1,0,0,0,0,0,0,1,0,0,0,0,0,0),
++     c(0,0,1,0,1,0,1,0,0,0,0,0,0,0,0),
++     c(0,1,0,0,0,1,0,1,0,0,0,0,0,0,0),
++     c(0,0,1,0,0,0,0,0,0,0,0,1,0,0,0),
++     c(1,0,0,0,0,0,0,0,0,1,0,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,0,1,1,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,0,1,1,0,0,0,0),
++     c(0,0,0,1,0,0,0,0,0,0,1,0,0,0,0),
++     c(0,0,0,0,1,1,0,0,0,1,0,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,0,0,0,0,1,0,0),
++     c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
++     c(0,0,0,0,0,0,1,1,0,0,1,0,0,0,0),
++     c(0,0,0,0,0,0,0,0,1,0,0,0,0,1,0),
++     c(0,0,0,0,0,0,0,0,0,1,1,0,1,0,1),
++     c(0,0,0,0,0,0,0,0,0,0,0,1,0,1,0)
++ )
+&gt; PageRankVector(A)
+ [1] 0.027 0.030 0.030 0.027 0.040 0.040 0.040 0.040 0.075 0.106 0.106 0.075 0.125 0.116 0.125
+</pre>
+</div>
+<div id="S1.SS2.p5" class="ltx_para">
+<p class="ltx_p">
+Higher numbers in the PageRank vector correspond to higher rankings. So, using the PageRank method with <math id="S1.SS2.p5.m1" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math>=.15 makes 13 and 15 the highest ranked websites and 1 and 4 the lowest ranked.
+</p>
+</div>
+</section>
+</section>
+<section id="S2" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">2 </span>Further Exploration
+</h2>
+<section id="S2.SS1" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">2.1 </span>Other Values of q
+</h3>
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">
+The jump probability, <math id="S2.SS1.p1.m1" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math>, is the probability that a web-surfer chooses any random website rather than clicking one of the links on their current website. We can illustrate this using the equation for the entries to the Google matrix <math id="S2.SS1.p1.m2" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math>.
+</p>
+<table id="S2.Ex8" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S2.Ex8.m1" class="ltx_Math" alttext="G_{ij}=\frac{q}{n}+A_{ij}(1-q)/n_{j}" display="block"><mrow><msub><mi>G</mi><mrow><mi>i</mi><mo>⁢</mo><mi>j</mi></mrow></msub><mo>=</mo><mrow><mfrac><mi>q</mi><mi>n</mi></mfrac><mo>+</mo><mrow><mrow><msub><mi>A</mi><mrow><mi>i</mi><mo>⁢</mo><mi>j</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>-</mo><mi>q</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><msub><mi>n</mi><mi>j</mi></msub></mrow></mrow></mrow></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+<p class="ltx_p">
+If <math id="S2.SS1.p1.m3" class="ltx_Math" alttext="q=1" display="inline"><mrow><mi>q</mi><mo>=</mo><mn>1</mn></mrow></math> then <math id="S2.SS1.p1.m4" class="ltx_Math" alttext="G_{ij}=\frac{q}{n}" display="inline"><mrow><msub><mi>G</mi><mrow><mi>i</mi><mo>⁢</mo><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mi>q</mi><mi>n</mi></mfrac></mrow></math> since the other term is multiplied by 0. As we expect, the probability of ending up at any particular website is just <math id="S2.SS1.p1.m5" class="ltx_Math" alttext="1/n" display="inline"><mrow><mn>1</mn><mo>/</mo><mi>n</mi></mrow></math> where <math id="S2.SS1.p1.m6" class="ltx_Math" alttext="n" display="inline"><mi>n</mi></math> is the number of websites: after visiting a website a web-surfer simply chooses another website at random from the list. We use the image() function in R to visualize the page rank vector for different values of <math id="S2.SS1.p1.m7" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math>. In <a href="#S2.F2" title="Figure 2 ‣ 2.1 Other Values of q ‣ 2 Further Exploration ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Figure&nbsp;2</span></a>, higher values in the PageRank vector are in yellow and lower values are in dark blue.
+</p>
+</div>
+<figure id="S2.F2" class="ltx_figure figure">
+<table id="S2.Ex9" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<object type="image/svg+xml" data="images/pagerank_Aq_v2.svg" id="S2.Ex9.m1.g1" class="ltx_graphics ltx_markedasmath" width="451" height="249" aria-label="Heatmap of PageRank vectors at different q values.">
+<p>
+Heatmap of PageRank vectors at different q values.
+</p>
+</object>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+<figcaption class="ltx_caption figure-caption">
+<span class="ltx_tag ltx_tag_figure">Figure 2: </span>Heatmap of PageRank vectors at different q values.
+</figcaption>
+</figure>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">
+The result we obtain from <a href="#S2.F2" title="Figure 2 ‣ 2.1 Other Values of q ‣ 2 Further Exploration ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Figure&nbsp;2</span></a> is precisely what we expect. At a <math id="S2.SS1.p2.m1" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math> value of 1 all of the websites’ entries in the PageRank vector are exactly equal (they are the same color). Moreover, as we decrease <math id="S2.SS1.p2.m2" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math> differences appear and become more pronounced. When <math id="S2.SS1.p2.m3" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math> is zero and the probability of ending up at any given website is based solely on the network structure: There are no random jumps. For PageRank, Google used a q value of .15 so that network structure is the primary determining factor but some random jumping occurs. This choice has a number of interesting implications for our network. We first observed that while 15, 14, and 13 have similar values when <math id="S2.SS1.p2.m4" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math> is zero, when <math id="S2.SS1.p2.m5" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math> reaches .15 website 14 has fallen further than 13 and 15. Additionally, 2 and 3 have lower values when <math id="S2.SS1.p2.m6" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math> is zero but higher values when <math id="S2.SS1.p2.m7" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math> is .15. It would be unrealistic to assume there is no random jumping when someone is surfing the web and not accounting for it leads to an incorrect page rank, especially in the case of 1, 2, 3, and 4. Why, exactly, these changes happen in this network is certainly worthy of further study. It may come about because of the symmetric connections between 2 and 3 and those between 13, 14, and 15.
+</p>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">2.2 </span>Removing a Node
+</h3>
+<figure id="S2.F3" class="ltx_figure figure">
+<table id="S2.Ex10" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<img src="images/network-3.png" id="S2.Ex10.m1.g1" class="ltx_graphics ltx_markedasmath figure-img" width="180" height="188" alt="Network with Page 10 removed.">
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+<figcaption class="ltx_caption figure-caption">
+<span class="ltx_tag ltx_tag_figure">Figure 3: </span>Network with Page 10 removed.
+</figcaption>
+</figure>
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">
+What happens to the ranks of the other pages if we remove a page from the network? For a start, we can predict that the effect on the other page ranks will be more pronounced when a page with a higher rank is removed. Being a probability distribution, the page rank vector needs to add to <math id="S2.SS2.p1.m1" class="ltx_Math" alttext="1" display="inline"><mn>1</mn></math>, and thus the value of the removed page’s rank will need to be redistributed to the other pages somehow, in order to maintain the sum of <math id="S2.SS2.p1.m2" class="ltx_Math" alttext="1" display="inline"><mn>1</mn></math>. The higher the removed page’s rank, the more value will be redistributed to the other pages.
+</p>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<p class="ltx_p">
+Exploring this theme of removing highly-ranked pages further, let’s look at a concrete example using the 15-page example from before. This time, we’ll remove page 10 to get the network shown in <a href="#S2.F3" title="Figure 3 ‣ 2.2 Removing a Node ‣ 2 Further Exploration ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Figure&nbsp;3</span></a>. Below are the page ranks we calculated for the modified network:
+</p>
+</div>
+<div id="S2.SS2.p3" class="ltx_para">
+<pre class="ltx_verbatim ltx_font_typewriter">&gt; PageRankVector(A[c(1:9, 11:15), c(1:9, 11:15)])
+ [1] 0.047 0.041 0.036 0.032 0.043 0.041 0.052 0.050 0.048 0.171 0.104 0.041 0.107 0.186
+</pre>
+</div>
+<div id="S2.SS2.p4" class="ltx_para">
+<p class="ltx_p">
+Comparing these rankings to those of the 15-page network, we see that almost all of the pages rose in rank, except for pages 9, 13, and 14. Note that page 13 was pointed to by page 10, and page 13 points to pages 9 and 14. It seems that the popularity of page 10 contributed to propping up the rankings of pages 9, 13, and 14, so when it was removed, those page rankings fell.
+</p>
+</div>
+<div id="S2.SS2.p5" class="ltx_para">
+<p class="ltx_p">
+It should be noted, however, that in the given network, there is a directed path from page 10 to every other page in the network, meaning that to some degree, all pages are pointed to by page 10, implying that page 10’s popularity should have had some effect of propping those pages up, if only small. We believe the reason why the rankings of the other pages did not fall is a combination of their degree of separation from page 10 (longer paths yield a smaller influence on ranking) and other factors (like a change in a page’s ratio of in-links to out-links).
+</p>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">2.3 </span>Rank Strategy
+</h3>
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">
+We then considered a possible strategy for a website to increase its PageRank. Specifically, what happens when websites 2 and 12 favor linking to website 7. We model this by changing the corresponding entries in the adjacency matrix from 1 to 2. In <a href="#S2.F4" title="Figure 4 ‣ 2.3 Rank Strategy ‣ 2 Further Exploration ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Figure&nbsp;4</span></a> we show this change by bolding these two links. We then calculated the PageRank vector <math id="S2.SS3.p1.m1" class="ltx_Math" alttext="p_{2}" display="inline"><msub><mi>p</mi><mn>2</mn></msub></math> for the modified matrix and calculated a ratio of it and the original PageRank vector <math id="S2.SS3.p1.m2" class="ltx_Math" alttext="p_{1}" display="inline"><msub><mi>p</mi><mn>1</mn></msub></math> to obtain a vector <math id="S2.SS3.p1.m3" class="ltx_Math" alttext="\frac{p_{2}}{p_{1}}" display="inline"><mfrac><msub><mi>p</mi><mn>2</mn></msub><msub><mi>p</mi><mn>1</mn></msub></mfrac></math>.
+</p>
+</div>
+<div id="S2.SS3.p2" class="ltx_para">
+<table id="S2.Ex11" class="ltx_equation ltx_eqn_table">
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft">
+</td>
+<td class="ltx_eqn_cell ltx_align_center">
+<math id="S2.Ex11.m1" class="ltx_Math" alttext="(p_{2}/p_{1})^{T}=" display="block"><mrow><msup><mrow><mo stretchy="false">(</mo><mrow><msub><mi>p</mi><mn>2</mn></msub><mo>/</mo><msub><mi>p</mi><mn>1</mn></msub></mrow><mo stretchy="false">)</mo></mrow><mi>T</mi></msup><mo>=</mo><mi></mi></mrow></math>
+</td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright">
+</td>
+</tr>
+</tbody></table>
+<pre class="ltx_verbatim ltx_font_typewriter" style="font-size:90%;">      [,1]  [,2]  [,3]  [,4]  [,5]  [,6] [,7]  [,8] [,9] [,10] [,11] [,12] [,13] [,14] [,15]
+[1,] 0.969 0.954 0.878 0.892 0.951 0.986 1.33 0.829 1.02  1.05 0.971  0.97  1.04  1.01 0.981
+</pre>
+</div>
+<figure id="S2.F4" class="ltx_figure figure">
+<img src="images/network-2.png" id="S2.F4.g1" class="ltx_graphics ltx_centering figure-img" width="180" height="188" alt="Modified network with more prominent links to website 7.">
+<figcaption class="ltx_caption ltx_centering figure-caption">
+<span class="ltx_tag ltx_tag_figure">Figure 4: </span>Modified network with more prominent links to website 7.
+</figcaption>
+</figure>
+<div id="S2.SS3.p3" class="ltx_para">
+<p class="ltx_p">
+Unsurprisingly, strategy has benefited page 7’s value in the PageRank vector. We decided to take a closer look at how the strategy impacted the values of other sites. We immediately noticed that while 11 and 10 are both linked to by page 7, only page 10’s value increased. This can be explained by examining the network structure. In the google matrix for the modified network the probability of moving from 12 to 7 is increased, this means that the probability of moving from 12 to 11 or 4 is decreased. So even though 11 may benefit from being linked to by 7 this is out weighed by the negative effect of being deprioritized by 12. 10 does not face this negative effect and thus benefits.
+</p>
+</div>
+<div class="ltx_pagination ltx_role_newpage">
+</div>
+</section>
+</section>
+<section id="A1" class="ltx_appendix">
+<h2 class="ltx_title ltx_title_appendix">
+<span class="ltx_tag ltx_tag_appendix">Appendix A </span>Appendix: Unmodified 15-Page Google Matrix
+</h2>
+<div id="A1.p1" class="ltx_para">
+<pre class="ltx_verbatim ltx_font_typewriter" style="font-size:90%;">&gt; GoogleMatrix(A)
+      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14] [,15]
+ [1,] 0.01 0.01 0.01 0.01 0.43 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [2,] 0.43 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [3,] 0.01 0.29 0.01 0.43 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [4,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.43 0.01  0.01  0.01  0.01  0.01  0.01  0.01
+ [5,] 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01 0.29  0.01  0.01  0.01  0.01  0.01  0.01
+ [6,] 0.01 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.29  0.01  0.01  0.01  0.01  0.01  0.01
+ [7,] 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.29  0.01  0.01  0.01
+ [8,] 0.01 0.01 0.29 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.29  0.01  0.01  0.01
+ [9,] 0.43 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.43  0.01  0.01
+[10,] 0.01 0.01 0.01 0.01 0.43 0.43 0.43 0.01 0.29  0.01  0.01  0.01  0.01  0.22  0.01
+[11,] 0.01 0.01 0.01 0.01 0.01 0.43 0.43 0.43 0.01  0.01  0.01  0.29  0.01  0.22  0.01
+[12,] 0.01 0.01 0.01 0.43 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.01  0.01  0.43
+[13,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.86  0.01  0.01  0.01  0.22  0.01
+[14,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.01  0.01  0.43  0.01  0.43
+[15,] 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01  0.01  0.86  0.01  0.01  0.22  0.01
+</pre>
+</div>
+</section>
+</article>
+</div>
+<footer class="ltx_page_footer">
+<div class="ltx_page_logo">
+<p>Generated by <a href="http://dlmf.nist.gov/LaTeXML/">LaTeXML <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAOCAYAAAD5YeaVAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wKExQZLWTEaOUAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAdpJREFUKM9tkL+L2nAARz9fPZNCKFapUn8kyI0e4iRHSR1Kb8ng0lJw6FYHFwv2LwhOpcWxTjeUunYqOmqd6hEoRDhtDWdA8ApRYsSUCDHNt5ul13vz4w0vWCgUnnEc975arX6ORqN3VqtVZbfbTQC4uEHANM3jSqXymFI6yWazP2KxWAXAL9zCUa1Wy2tXVxheKA9YNoR8Pt+aTqe4FVVVvz05O6MBhqUIBGk8Hn8HAOVy+T+XLJfLS4ZhTiRJgqIoVBRFIoric47jPnmeB1mW/9rr9ZpSSn3Lsmir1fJZlqWlUonKsvwWwD8ymc/nXwVBeLjf7xEKhdBut9Hr9WgmkyGEkJwsy5eHG5vN5g0AKIoCAEgkEkin0wQAfN9/cXPdheu6P33fBwB4ngcAcByHJpPJl+fn54mD3Gg0NrquXxeLRQAAwzAYj8cwTZPwPH9/sVg8PXweDAauqqr2cDjEer1GJBLBZDJBs9mE4zjwfZ85lAGg2+06hmGgXq+j3+/DsixYlgVN03a9Xu8jgCNCyIegIAgx13Vfd7vdu+FweG8YRkjXdWy329+dTgeSJD3ieZ7RNO0VAXAPwDEAO5VKndi2fWrb9jWl9Esul6PZbDY9Go1OZ7PZ9z/lyuD3OozU2wAAAABJRU5ErkJggg==" alt="[LOGO]"></a></p>
+</div>
+</footer>
+</div>
+
+
+</main> 
+  </div>
+</div>
+ <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">© Nathaniel Reimer, 2023<br> All content licensed under <i class="bi-badge-cc"></i> <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">(CC BY-NC-SA 4.0)</a></div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">Site built with <a href="https://quarto.org/">Quarto</a></div>
+  </div>
+</footer>
+
+
+
+</body></html>
