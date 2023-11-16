@@ -15,15 +15,15 @@ execute:
   message: false
 format: html
 ---
+<!DOCTYPE html><html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>PageRank with Eigenvectors  cla365 technical report </title>
-<!--Generated on Wed Nov 15 19:55:02 2023 by LaTeXML (version 0.8.6) http://dlmf.nist.gov/LaTeXML/.-->
+<!--Generated on Thu Nov 16 15:52:23 2023 by LaTeXML (version 0.8.6) http://dlmf.nist.gov/LaTeXML/.-->
 <!--Document created on April 30, 2022.-->
 
 <link rel="stylesheet" href="LaTeXML.css" type="text/css">
 <link rel="stylesheet" href="ltx-article.css" type="text/css">
-<link rel="stylesheet" href="ltx-listings.css" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 </head>
 <body>
@@ -31,8 +31,8 @@ format: html
 <div class="ltx_page_content">
 <article class="ltx_document ltx_authors_1line">
 <h1 class="ltx_title ltx_title_document">
-<span class="ltx_text ltx_font_sansserif">PageRank with Eigenvectors</span> 
-<br class="ltx_break"><span class="ltx_text ltx_font_smallcaps">cla365 technical report </span>
+<span class="ltx_text ltx_font_sansserif">PageRank with Eigenvectors</span>
+<span class="ltx_text ltx_font_smallcaps">cla365 technical report </span>
 </h1>
 <div class="ltx_authors">
 <span class="ltx_creator ltx_role_author">
@@ -87,8 +87,7 @@ nonnegative. Note that for each entry in <math id="S1.SS1.p1.m4" class="ltx_Math
 <li id="S1.I1.i2" class="ltx_item" style="list-style-type:none;">
 <span class="ltx_tag ltx_tag_item">2.</span> 
 <div id="S1.I1.i2.p1" class="ltx_para">
-<p class="ltx_p"><math id="S1.I1.i2.p1.m1" class="ltx_Math" alttext="n&gt;0" display="inline"><mrow><mi>n</mi><mo>&gt;</mo><mn>0</mn></mrow></math>
-</p>
+<p class="ltx_p"><math id="S1.I1.i2.p1.m1" class="ltx_Math" alttext="n&gt;0" display="inline"><mrow><mi>n</mi><mo>&gt;</mo><mn>0</mn></mrow></math></p>
 </div>
 </li>
 <li id="S1.I1.i3" class="ltx_item" style="list-style-type:none;">
@@ -184,11 +183,10 @@ to <math id="S1.SS1.p12.m2" class="ltx_Math" alttext="1" display="inline"><mn>1<
 <p class="ltx_p">To calculate page ranks for a given network of pages, we can use the fact that <math id="S1.SS2.p1.m1" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math> is
 stochastic and find its dominant eigenvector, which will give us the rankings. If we
 scale that eigenvector so that its entries sum to <math id="S1.SS2.p1.m2" class="ltx_Math" alttext="1" display="inline"><mn>1</mn></math>, we’ll have our answer. To do
-this, we’ve written two R functions, <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">GoogleMatrix</span> and <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">PageRankVector</span>,
-which take in an <math id="S1.SS2.p1.m3" class="ltx_Math" alttext="n\times n" display="inline"><mrow><mi>n</mi><mo>×</mo><mi>n</mi></mrow></math> adjacency matrix <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">adj</span> and output, respectively,
+this, we’ve written two R functions, GoogleMatrix and PageRankVector,
+which take in an <math id="S1.SS2.p1.m3" class="ltx_Math" alttext="n\times n" display="inline"><mrow><mi>n</mi><mo>×</mo><mi>n</mi></mrow></math> adjacency matrix adj and output, respectively,
 the <math id="S1.SS2.p1.m4" class="ltx_Math" alttext="n\times n" display="inline"><mrow><mi>n</mi><mo>×</mo><mi>n</mi></mrow></math> Google matrix of the network and a vector of page ranks given the value
-of <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">q</span> (which defaults to <math id="S1.SS2.p1.m5" class="ltx_Math" alttext="0.15" display="inline"><mn>0.15</mn></math>).
-</p>
+of q (which defaults to <math id="S1.SS2.p1.m5" class="ltx_Math" alttext="0.15" display="inline"><mn>0.15</mn></math>).</p>
 </div>
 <div id="S1.SS2.p2" class="ltx_para">
 <pre class="ltx_verbatim ltx_font_typewriter">
@@ -233,7 +231,7 @@ PageRankVector = function(adj, q=0.15) {
 </figure>
 <div id="S1.SS2.p3" class="ltx_para">
 <p class="ltx_p">We can test these functions on the network in <a href="#S1.F1" title="Figure 1 ‣ 1.2 Calculating the Google Matrix and Page Ranks ‣ 1 Implementing PageRank ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Figure 1</span></a> that is taken from
-the textbook. The result of running <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">GoogleMatrix</span> is shown in <a href="#A1" title="Appendix A Appendix: Unmodified 15-Page Google Matrix ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Appendix A</span></a>, but the result of running <span class="ltx_text ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting ltx_font_typewriter ltx_framed_rectangle" style="font-size:80%;">PageRankVector</span> is
+the textbook. The result of running GoogleMatrix is shown in <a href="#A1" title="Appendix A Appendix: Unmodified 15-Page Google Matrix ‣ PageRank with Eigenvectors cla365 technical report" class="ltx_ref ltx_refmacro_autoref"><span class="ltx_text ltx_ref_tag">Appendix A</span></a>, but the result of running PageRankVector is
 shown below:</p>
 </div>
 <div id="S1.SS2.p4" class="ltx_para">
@@ -274,8 +272,7 @@ method with <math id="S1.SS2.p5.m1" class="ltx_Math" alttext="q" display="inline
 <span class="ltx_tag ltx_tag_subsection">2.1 </span>Other Values of q</h3>
 
 <div id="S2.SS1.p1" class="ltx_para">
-<p class="ltx_p">The jump probability, <math id="S2.SS1.p1.m1" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math>, is the probability that a web-surfer chooses any random website rather than clicking one of the links on their current website. We can illustrate this using the equation for the entries to the Google matrix <math id="S2.SS1.p1.m2" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math>.
-</p>
+<p class="ltx_p">The jump probability, <math id="S2.SS1.p1.m1" class="ltx_Math" alttext="q" display="inline"><mi>q</mi></math>, is the probability that a web-surfer chooses any random website rather than clicking one of the links on their current website. We can illustrate this using the equation for the entries to the Google matrix <math id="S2.SS1.p1.m2" class="ltx_Math" alttext="G" display="inline"><mi>G</mi></math>.</p>
 <table id="S2.Ex8" class="ltx_equation ltx_eqn_table">
 
 <tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
@@ -291,7 +288,9 @@ method with <math id="S1.SS2.p5.m1" class="ltx_Math" alttext="q" display="inline
 
 <tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
 <td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
-<td class="ltx_eqn_cell ltx_align_center"><object type="image/svg+xml" data="images/pagerank_Aq_v2.svg" id="S2.Ex9.m1.g1" class="ltx_graphics ltx_markedasmath" width="451" height="249" aria-label="Heatmap of PageRank vectors at different q values."><p>Heatmap of PageRank vectors at different q values.</p></object></td>
+<td class="ltx_eqn_cell ltx_align_center">
+<img src="images/pagerank-Aq-v2.png" id="S2.Ex9.m1.g1" class="ltx_graphics ltx_markedasmath" width="451" height="249" alt="Heatmap of PageRank vectors at different q values."><span class="ltx_text ltx_markedasmath"></span>
+</td>
 <td class="ltx_eqn_cell ltx_eqn_center_padright"></td>
 </tr>
 </table>

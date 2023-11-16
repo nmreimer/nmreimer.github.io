@@ -7,7 +7,7 @@ latexml (LaTeXML version 0.8.6) processing TRTemplate.tex
 (Loading /usr/share/perl5/LaTeXML/Package/LaTeX.pool.ltxml...
 (Loading /usr/share/perl5/LaTeXML/Package/textcomp.sty.ltxml...
 (Processing definitions /usr/share/texlive/texmf-dist/tex/latex/base/ts1enc.dfu... 0.01 sec) 0.04 sec) 0.14 sec)
-(Loading /usr/share/perl5/LaTeXML/Package/article.cls.ltxml... 0.00 sec)
+(Loading /usr/share/perl5/LaTeXML/Package/article.cls.ltxml... 0.01 sec)
 (Loading /usr/share/perl5/LaTeXML/Package/amsmath.sty.ltxml...
 (Loading /usr/share/perl5/LaTeXML/Package/amsbsy.sty.ltxml...
 (Loading /usr/share/perl5/LaTeXML/Package/amsgen.sty.ltxml... 0.00 sec) 0.00 sec)
@@ -22,35 +22,12 @@ latexml (LaTeXML version 0.8.6) processing TRTemplate.tex
 (Loading /usr/share/perl5/LaTeXML/Package/url.sty.ltxml... 0.00 sec) 0.03 sec)
 (Loading /usr/share/perl5/LaTeXML/Package/hypcap.sty.ltxml... 0.00 sec)
 (Loading /usr/share/perl5/LaTeXML/Package/float.sty.ltxml... 0.00 sec)
-(Loading /usr/share/perl5/LaTeXML/Package/xcolor.sty.ltxml...
-(Loading /usr/share/perl5/LaTeXML/Package/color.sty.ltxml... 0.00 sec) 0.03 sec)
-(Loading /usr/share/perl5/LaTeXML/Package/svg.sty.ltxml...
-(Loading /usr/share/perl5/LaTeXML/Package/subfig.sty.ltxml... 0.00 sec)
-(Loading /usr/share/perl5/LaTeXML/Package/transparent.sty.ltxml... 0.00 sec)
-(Loading /usr/share/perl5/LaTeXML/Package/import.sty.ltxml... 0.00 sec) 0.01 sec)
 (Loading /usr/share/perl5/LaTeXML/Package/geometry.sty.ltxml...
 (Loading /usr/share/perl5/LaTeXML/Package/ifpdf.sty.ltxml... 0.00 sec)
 (Loading /usr/share/perl5/LaTeXML/Package/ifvtex.sty.ltxml... 0.00 sec)
-(Loading /usr/share/perl5/LaTeXML/Package/ifxetex.sty.ltxml... 0.00 sec) 0.01 sec)
-(Loading /usr/share/perl5/LaTeXML/Package/listings.sty.ltxml...
-Warning:missing_file:listings Can't find configuration listings
-	at listings.sty.ltxml; line 1542
-	Anticipate undefined macros or environments
-	search paths are /home/nmreimer/Documents/ProjectsInDS/nmreimer.github.io/projects/pagerank
-	In Core::Gullet[@0x55bcc48883b8] /usr/share/perl5/LaTeXML/Package/listings.sty.ltxml; line 1542
-Error:undefined:\lstlanguagefiles The token T_CS[\lstlanguagefiles] is not defined.
-	at listings.sty.ltxml; line 1543
-	Defining it now as <ltx:ERROR/>
-	Input is empty
-	In Core::Gullet[@0x55bcc48883b8] /usr/share/perl5/LaTeXML/Package/listings.sty.ltxml; line 1543
-	 <= Core::Stomach[@0x55bcc48886e8] <= Core::Gullet[@0x55bcc48883b8] <= Core::Definition::Constructor[\usepac... <= ...
- 0.05 sec)
-Warning:unexpected:LST@LANGUAGE@R No listings language 'R' found
-	at TRTemplate.tex; line 39 col 0 - line 39 col 1
-	In Core::Definition::Expandable[\lst@@la... /usr/share/perl5/LaTeXML/Package/listings.sty.ltxml; line 722
- 0.79 sec) 0.87 sec)
+(Loading /usr/share/perl5/LaTeXML/Package/ifxetex.sty.ltxml... 0.00 sec) 0.01 sec) 0.67 sec) 0.74 sec)
 (Building...
-(Loading compiled schema /usr/share/perl5/LaTeXML/resources/RelaxNG/LaTeXML.model... 0.01 sec) 0.42 sec)
+(Loading compiled schema /usr/share/perl5/LaTeXML/resources/RelaxNG/LaTeXML.model... 0.01 sec) 0.40 sec)
 (Rewriting... 0.00 sec)
 (Math Parsing 60 formulae ...... 0.23 sec)
 Math parsing succeeded:
@@ -60,4 +37,4 @@ Symbols assumed as simple identifiers (with # of occurences):
    'A{italic}' (8), 'G{italic}' (3), 'i{italic}' (15), 'j{italic}' (12), 'n{italic}' (21), 'p{italic}' (6), 'q{italic}' (17)
 Set MATHPARSER_SPECULATE to speculate on possible notations.
 (Finalizing... 0.03 sec)
-Conversion complete 2 warnings; 1 error; 1 undefined macro[\lstlanguagefiles]; 1 missing file[listings.cfg] (See /home/nmreimer/Documents/ProjectsInDS/nmreimer.github.io/projects/pagerank/TRTemplate.latexml.log) (reqd. 1.65s)
+Conversion complete No obvious problems (reqd. 1.50s)

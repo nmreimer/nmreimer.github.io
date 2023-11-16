@@ -5,41 +5,10 @@
 \usepackage[all]{hypcap} % Make \autoref links jump to TOP of figures, not their captions
 \usepackage{float} % Put figures exactly where they are in the code with [H]
 
-% Enhancing the code listings
-% \usepackage{courier} % \ttfamily will use Courier font (can't use bold text though)
-\usepackage{xcolor}
-\definecolor{keywordblue}{RGB}{0,0,255}
-\definecolor{commentgreen}{RGB}{76, 136, 107}
-\usepackage[clean]{svg}
+
 \usepackage[letterpaper,margin=1in]{geometry}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  This is a special package and its settings for displaying computer code in a LaTeX file
-%
-\usepackage{listings}
-\lstset{ %
-language=R,                % choose the language of the code
-basicstyle=\footnotesize\ttfamily,       % the size of the fonts that are used for the code
-numbers=left,                   % where to put the line-numbers
-numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
-keywordstyle=\color{keywordblue},
-% identifierstyle=,
-commentstyle=\color{commentgreen},
-stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
-numbersep=5pt,                  % how far the line-numbers are from the code
-showspaces=false,               % show spaces adding particular underscores
-showstringspaces=false,         % underline spaces within strings
-showtabs=false,                 % show tabs within strings adding particular underscores
-frame=single,           % adds a frame around the code
-tabsize=2,          % sets default tabsize to 2 spaces
-captionpos=b,           % sets the caption-position to bottom
-breaklines=true,        % sets automatic line breaking
-breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
-escapeinside={\%*}{*)}          % if you want to add a comment within your code
-}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{{\sffamily PageRank with Eigenvectors} \\ 
+\title{{\sffamily PageRank with Eigenvectors}
 {\sc cla365 technical report }}
 
 \author{Nathaniel Reimer \and Preston Locke}
@@ -118,10 +87,10 @@ to $1$, so we have proven that $G$ is stochastic.
 To calculate page ranks for a given network of pages, we can use the fact that $G$ is
 stochastic and find its dominant eigenvector, which will give us the rankings. If we
 scale that eigenvector so that its entries sum to $1$, we'll have our answer. To do
-this, we've written two R functions, \lstinline{GoogleMatrix} and \lstinline{PageRankVector},
-which take in an $n \times n$ adjacency matrix \lstinline{adj} and output, respectively,
+this, we've written two R functions, GoogleMatrix and PageRankVector,
+which take in an $n \times n$ adjacency matrix adj and output, respectively,
 the $n \times n$ Google matrix of the network and a vector of page ranks given the value
-of \lstinline{q} (which defaults to $0.15$).
+of q (which defaults to $0.15$).
 
 \begin{verbatim}
 GoogleMatrix = function(adj, q=0.15) {
@@ -163,7 +132,7 @@ $$
 
 
 We can test these functions on the network in \autoref{fig:network1} that is taken from
-the textbook. The result of running \lstinline{GoogleMatrix} is shown in \autoref{appendix:googlematrix}, but the result of running \lstinline{PageRankVector} is
+the textbook. The result of running GoogleMatrix is shown in \autoref{appendix:googlematrix}, but the result of running PageRankVector is
 shown below:
 
 \begin{small}
@@ -202,7 +171,7 @@ If \(q=1\) then \(G_{ij}=\frac{q}{n}\) since the other term is multiplied by 0. 
 
 \begin{figure}[H]
 $$
-\includesvg[width=5in]{images/pagerank_Aq_v2.svg} 
+\includegraphics[width=5in]{images/pagerank-Aq-v2.png} 
 $$
 \vspace{-0.4in}
 \caption{Heatmap of PageRank vectors at different q values.}

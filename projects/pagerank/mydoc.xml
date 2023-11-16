@@ -6,16 +6,13 @@
 <?latexml package="hyperref"?>
 <?latexml package="hypcap" options="all"?>
 <?latexml package="float"?>
-<!--  %Enhancing the code listings --><!--  %“usepackage–courier˝ % “ttfamily will use Courier font (can’t use bold text though) --><?latexml package="xcolor"?>
-<?latexml package="svg" options="clean"?>
 <?latexml package="geometry" options="letterpaper,margin=1in"?>
-<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% --><!--  %This is a special package and its settings for displaying computer code in a LaTeX file --><?latexml package="listings"?>
-<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% --><?latexml RelaxNGSchema="LaTeXML"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <resource src="ltx-listings.css" type="text/css"/>
-  <title><text font="sansserif">PageRank with Eigenvectors</text> <break/><text font="smallcaps">cla365 technical report </text></title>
+  <title><text font="sansserif">PageRank with Eigenvectors</text>
+<text font="smallcaps">cla365 technical report </text></title>
   <creator role="author">
     <personname>Nathaniel Reimer</personname>
   </creator>
@@ -30,7 +27,7 @@
         </XMath>
       </Math>)</p>
   </abstract>
-<!--  %**** TRTemplate.tex Line 50 **** -->  <section inlist="toc" xml:id="S1">
+<!--  %**** TRTemplate.tex Line 25 **** -->  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="autoref">section 1</tag>
@@ -170,8 +167,7 @@ nonnegative. Note that for each entry in <Math mode="inline" tex="G" text="G" xm
                       <XMTok meaning="0" role="NUMBER">0</XMTok>
                     </XMApp>
                   </XMath>
-                </Math>
-<!--  %**** TRTemplate.tex Line 75 **** --></p>
+                </Math></p>
             </para>
           </item>
           <item xml:id="S1.I1.i3">
@@ -308,7 +304,7 @@ nonnegative numbers. And then, by facts 3 and 4, <Math mode="inline" tex="n_{j}"
               </XMApp>
             </XMath>
           </Math> must also be nonnegative. Therefore,
-we can say that the entire expression is nonnegative, and thus, each entry in <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p5.m5">
+<!--  %**** TRTemplate.tex Line 50 **** -->we can say that the entire expression is nonnegative, and thus, each entry in <Math mode="inline" tex="G" text="G" xml:id="S1.SS1.p5.m5">
             <XMath>
               <XMTok font="italic" role="UNKNOWN">G</XMTok>
             </XMath>
@@ -543,7 +539,7 @@ respect to <Math mode="inline" tex="i" text="i" xml:id="S1.SS1.p8.m5">
           </Math>
         </equation>
       </para>
-<!--  %**** TRTemplate.tex Line 100 **** -->      <para xml:id="S1.SS1.p10">
+      <para xml:id="S1.SS1.p10">
         <p>Now, using fact 4 from the first part of our proof, we can simplify <Math mode="inline" tex="\sum_{i=1}^{n}A_{ji}" text="((sum _ (i = 1)) ^ n)@(A _ (j * i))" xml:id="S1.SS1.p10.m1">
             <XMath>
               <XMApp>
@@ -628,7 +624,7 @@ to <Math mode="inline" tex="n_{j}" text="n _ j" xml:id="S1.SS1.p10.m2">
             </XMath>
           </Math>
         </equation>
-        <equation xml:id="S1.Ex5">
+<!--  %**** TRTemplate.tex Line 75 **** -->        <equation xml:id="S1.Ex5">
           <Math mode="display" tex="q+(1-q)" text="q + (1 - q)" xml:id="S1.Ex5.m1">
             <XMath>
               <XMApp>
@@ -695,7 +691,7 @@ scale that eigenvector so that its entries sum to <Math mode="inline" tex="1" te
               <XMTok meaning="1" role="NUMBER">1</XMTok>
             </XMath>
           </Math>, we’ll have our answer. To do
-this, we’ve written two R functions, <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">GoogleMatrix</text> and <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">PageRankVector</text>,
+this, we’ve written two R functions, GoogleMatrix and PageRankVector,
 which take in an <Math mode="inline" tex="n\times n" text="n * n" xml:id="S1.SS2.p1.m3">
             <XMath>
               <XMApp>
@@ -704,7 +700,7 @@ which take in an <Math mode="inline" tex="n\times n" text="n * n" xml:id="S1.SS2
                 <XMTok font="italic" role="UNKNOWN">n</XMTok>
               </XMApp>
             </XMath>
-          </Math> adjacency matrix <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">adj</text> and output, respectively,
+          </Math> adjacency matrix adj and output, respectively,
 the <Math mode="inline" tex="n\times n" text="n * n" xml:id="S1.SS2.p1.m4">
             <XMath>
               <XMApp>
@@ -714,12 +710,11 @@ the <Math mode="inline" tex="n\times n" text="n * n" xml:id="S1.SS2.p1.m4">
               </XMApp>
             </XMath>
           </Math> Google matrix of the network and a vector of page ranks given the value
-of <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">q</text> (which defaults to <Math mode="inline" tex="0.15" text="0.15" xml:id="S1.SS2.p1.m5">
+of q (which defaults to <Math mode="inline" tex="0.15" text="0.15" xml:id="S1.SS2.p1.m5">
             <XMath>
               <XMTok meaning="0.15" role="NUMBER">0.15</XMTok>
             </XMath>
-          </Math>).
-<!--  %**** TRTemplate.tex Line 125 **** --></p>
+          </Math>).</p>
       </para>
       <para xml:id="S1.SS2.p2">
         <verbatim font="typewriter">
@@ -758,7 +753,7 @@ PageRankVector = function(adj, q=0.15) {
           <tag role="refnum">1</tag>
           <tag role="typerefnum">Figure 1</tag>
         </tags>
-        <equation xml:id="S1.Ex7">
+<!--  %**** TRTemplate.tex Line 125 **** -->        <equation xml:id="S1.Ex7">
           <graphics candidates="images/network-1.png" class="ltx_markedasmath" graphic="images/network-1.png" options="width=144.54pt" xml:id="S1.Ex7.m1.g1"/>
         </equation>
         <toccaption><tag close=" ">1</tag>Network of 15 pages, taken from page 550 of the textbook.</toccaption>
@@ -766,7 +761,7 @@ PageRankVector = function(adj, q=0.15) {
       </figure>
       <para xml:id="S1.SS2.p3">
         <p>We can test these functions on the network in <ref class="ltx_refmacro_autoref" labelref="LABEL:fig:network1" show="autoref"/> that is taken from
-the textbook. The result of running <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">GoogleMatrix</text> is shown in <ref class="ltx_refmacro_autoref" labelref="LABEL:appendix:googlematrix" show="autoref"/>, but the result of running <text class="ltx_lst_identifier ltx_lst_language_R ltx_lst_numbers_left ltx_lstlisting" font="typewriter" fontsize="80%" framed="rectangle">PageRankVector</text> is
+the textbook. The result of running GoogleMatrix is shown in <ref class="ltx_refmacro_autoref" labelref="LABEL:appendix:googlematrix" show="autoref"/>, but the result of running PageRankVector is
 shown below:</p>
       </para>
       <para xml:id="S1.SS2.p4">
@@ -827,8 +822,7 @@ method with <Math mode="inline" tex="q" text="q" xml:id="S1.SS2.p5.m1">
             <XMath>
               <XMTok font="italic" role="UNKNOWN">G</XMTok>
             </XMath>
-          </Math>.
-<!--  %**** TRTemplate.tex Line 200 **** --></p>
+          </Math>.</p>
         <equation xml:id="S2.Ex8">
           <Math mode="display" tex="G_{ij}=\frac{q}{n}+A_{ij}(1-q)/n_{j}" text="G _ (i * j) = q / n + (A _ (i * j) * (1 - q)) / n _ j" xml:id="S2.Ex8.m1">
             <XMath>
@@ -941,7 +935,8 @@ method with <Math mode="inline" tex="q" text="q" xml:id="S1.SS2.p5.m1">
           <tag role="typerefnum">Figure 2</tag>
         </tags>
         <equation xml:id="S2.Ex9">
-          <graphics candidates="images/pagerank_Aq_v2.svg" class="ltx_markedasmath" graphic="images/pagerank_Aq_v2.svg" options="width=361.35pt" xml:id="S2.Ex9.m1.g1"/>
+          <graphics candidates="images/pagerank-Aq-v2.png" class="ltx_markedasmath" graphic="images/pagerank-Aq-v2.png" options="width=361.35pt" xml:id="S2.Ex9.m1.g1"/>
+          <text class="ltx_markedasmath"/>
         </equation>
         <toccaption><tag close=" ">2</tag>Heatmap of PageRank vectors at different q values.</toccaption>
         <caption><tag close=": ">Figure 2</tag>Heatmap of PageRank vectors at different q values.</caption>
@@ -997,14 +992,14 @@ This choice has a number of interesting implications for our network. We first o
         <equation xml:id="S2.Ex10">
           <graphics candidates="images/network-3.png" class="ltx_markedasmath" graphic="images/network-3.png" options="width=144.54pt" xml:id="S2.Ex10.m1.g1"/>
         </equation>
-<!--  %**** TRTemplate.tex Line 225 **** -->        <toccaption><tag close=" ">3</tag>Network with Page 10 removed.</toccaption>
+        <toccaption><tag close=" ">3</tag>Network with Page 10 removed.</toccaption>
         <caption><tag close=": ">Figure 3</tag>Network with Page 10 removed.</caption>
       </figure>
       <para xml:id="S2.SS2.p1">
         <p>What happens to the ranks of the other pages if we remove a page from the network?
 For a start, we can predict that the effect on the other page ranks will be more
 pronounced when a page with a higher rank is removed. Being a probability
-distribution, the page rank vector needs to add to <Math mode="inline" tex="1" text="1" xml:id="S2.SS2.p1.m1">
+<!--  %**** TRTemplate.tex Line 200 **** -->distribution, the page rank vector needs to add to <Math mode="inline" tex="1" text="1" xml:id="S2.SS2.p1.m1">
             <XMath>
               <XMTok meaning="1" role="NUMBER">1</XMTok>
             </XMath>
@@ -1034,14 +1029,14 @@ for the modified network:</p>
 pages rose in rank, except for pages 9, 13, and 14. Note that page 13 was pointed to by
 page 10, and page 13 points to pages 9 and 14. It seems that the popularity of page 10
 contributed to propping up the rankings of pages 9, 13, and 14, so when it was removed,
-<!--  %**** TRTemplate.tex Line 250 **** -->those page rankings fell.</p>
+those page rankings fell.</p>
       </para>
       <para xml:id="S2.SS2.p5">
         <p>It should be noted, however, that in the given network, there is a directed path from
 page 10 to every other page in the network, meaning that to some degree, all
 pages are pointed to by page 10, implying that page 10’s popularity should have had
 some effect of propping those pages up, if only small. We believe the reason why the
-rankings of the other pages did not fall is a combination of their degree of separation from
+<!--  %**** TRTemplate.tex Line 225 **** -->rankings of the other pages did not fall is a combination of their degree of separation from
 page 10 (longer paths yield a smaller influence on ranking) and other factors
 (like a change in a page’s ratio of in-links to out-links).</p>
       </para>
@@ -1137,13 +1132,13 @@ page 10 (longer paths yield a smaller influence on ranking) and other factors
           <tag role="typerefnum">Figure 4</tag>
         </tags>
         <graphics candidates="images/network-2.png" class="ltx_centering" graphic="images/network-2.png" options="width=144.54pt" xml:id="S2.F4.g1"/>
-<!--  %**** TRTemplate.tex Line 275 **** -->        <toccaption class="ltx_centering"><tag close=" ">4</tag>Modified network with more prominent links to website 7.</toccaption>
+        <toccaption class="ltx_centering"><tag close=" ">4</tag>Modified network with more prominent links to website 7.</toccaption>
         <caption class="ltx_centering"><tag close=": ">Figure 4</tag>Modified network with more prominent links to website 7.</caption>
       </figure>
       <para xml:id="S2.SS3.p3">
         <p>Unsurprisingly, strategy has benefited page 7’s value in the PageRank vector. We decided to take a closer look at how the strategy impacted the values of other sites. We immediately noticed that while 11 and 10 are both linked to by page 7, only page 10’s value increased. This can be explained by examining the network structure. In the google matrix for the modified network the probability of moving from 12 to 7 is increased, this means that the probability of moving from 12 to 11 or 4 is decreased. So even though 11 may benefit from being linked to by 7 this is out weighed by the negative effect of being deprioritized by 12. 10 does not face this negative effect and thus benefits.</p>
       </para>
-      <pagination role="newpage"/>
+<!--  %**** TRTemplate.tex Line 250 **** -->      <pagination role="newpage"/>
     </subsection>
   </section>
   <appendix inlist="toc" labels="LABEL:appendix:googlematrix" xml:id="A1">
