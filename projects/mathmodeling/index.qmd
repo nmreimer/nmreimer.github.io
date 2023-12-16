@@ -15,11 +15,11 @@ bibliography: references.bib
 
 ## Introduction
 
-Pollutant runoff is harmful to many ecosystems. Agricultural runoff can be particularly harmful to ecosystems because it contains a high concentration of nitrogen. This nitrogen is primarily from nitrogen fertilizers vital to global food supplies. When nitrogen is allowed to enter oceans and waterways it can fuel phytoplankton blooms [@michaelbeman2005]. Phytoplankton blooms, particularly those involving toxix species, can devastate ecosystems and the people that live near and rely on those ecosystems [@HAB2018]. There are a variety of mitigation methods for reducing the amount of nitrogen that is carried out of agricultural areas by runoff.
+Pollutant runoff is harmful to many ecosystems. Agricultural runoff can be particularly harmful to ecosystems because it contains a high concentration of nitrogen. This nitrogen is primarily from nitrogen fertilizers vital to global food supplies. When nitrogen is allowed to enter oceans and waterways it can fuel phytoplankton blooms [@michaelbeman2005]. Phytoplankton blooms, particularly those involving toxic species, can devastate ecosystems and the people that live near and rely on those ecosystems [@HAB2018]. There are a variety of mitigation methods for reducing the amount of nitrogen that is carried out of agricultural areas by runoff.
 
 ## A Potential Model
 
-We represent nitrogen dissolved in water with $C$ and nitrogen deposited on the ground with $N$. Nitrogen in water is subject to simple advection-diffusion: $C_{t} = -(Cv)_{x} + kC_{xx}$. Nitrogen on the ground is stationary. Some hydrological models of pollutant transport use similar logical frameworks. Shao et al. use an equivalent exchange layer to mediate between surface runoff and nutrients stored in the ground [@shao2023]. A fractional mobile-immobile model is similarly predicated on simple advection diffusion with mobile and immobile components of the solute [@sun2020]. Both models present complicated methods for transfer between the two states.
+We represent nitrogen dissolved in water with $C$ and nitrogen deposited on the ground with $N$. Nitrogen in water is subject to simple advection-diffusion: $C_{t} = -(Cv)_{x} + kC_{xx}$. Nitrogen on the ground is stationary. Some hydrological models of pollutant transport use similar logical frameworks. Shao et al. use an equivalent exchange layer to mediate between surface runoff and nutrients stored in the ground [@shao2023]. A fractional mobile-immobile model is similarly predicated on simple advection-diffusion with mobile and immobile components of the solute [@sun2020]. Both models present complicated methods for transfer between the two states.
 
 ```{python}
 from skfdiff import Model, Simulation
@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 
 $$
 C_{t} = -(Cv)_{x} + kC_{xx} + N \frac{e^{v-n}}{1 + e^{v-n}} - C\frac{e^{n-v}}{1 + e^{n-v}}\\  
-$$
+$$ 
 
 $$
 N_{t} = - N \frac{e^{v-n}}{1 + e^{v-n}} + C\frac{e^{n-v}}{1 + e^{n-v}}\\
@@ -44,7 +44,7 @@ We represent transfers between ground nitrogen and dissolved nitrogen in this mo
 
 The simplicity of the model, of course, comes at the expense of accuracy.
 
-The model assumes that there is a single erosion-deposition threshold ($n$); that advection does not vary with time; that the quantity of water does not have an impact; that raindrops do not have an impact; and that water only interacts with nitrogen. In the real world we would likely see two thresholds for erosion-deposition [@Earle2015]. Raindrops, as seen in the equivalent exchange layer model, are big drivers of sediment transport. Also, in the real world, water carrying other things would impact it's ability to pick up nitrogen.
+The model assumes that there is a single erosion-deposition threshold ($n$); that advection does not vary with time; that the quantity of water does not have an impact; that raindrops do not have an impact; and that water only interacts with nitrogen. In the real world, we would likely see two thresholds for erosion-deposition [@Earle2015]. Raindrops, as seen in the equivalent exchange layer model, are big drivers of sediment transport. Also, in the real world, water carrying other things would impact its ability to pick up nitrogen.
 
 ### Implementation with Scikit FiniteDiff
 
@@ -86,7 +86,6 @@ plt.xlabel("X")
 plt.ylabel("Value")
 plt.show()
 ```
-
 ## Model Behavior
 
 ```{python}
@@ -133,11 +132,11 @@ axs[4].set_xlabel("Position")
 fig.show()
 ```
 
-The basic model behavior is working as intended. Nitrogen from the ground is picked up from areas where velocity is high and deposited in the area where velocity is low.
+The basic model behavior is working as intended. Nitrogen from the ground is picked up from areas where velocity is high and deposited in the area where velocity is low. 
 
 ### Modeling with Different Advection
 
-To get a better grasp on the behavior of the model we run it with a variety of different initial conditions. Here we look at a less effective runoff prevention measure that does not slow down the water as much. In the original the speed of advection is slowed to .5 at $x = 8$, in this second run it only slows to a speed of 2. Looking at the y-axes of these plots compared to those above we can see that this has managed to catch much less of the nitrogen.
+To get a better grasp on the behavior of the model we run it with a variety of different initial conditions. Here we look at a less effective runoff prevention measure that does not slow down the water as much. In the original, the speed of advection is slowed to .5 at $x = 8$, in this second run it only slows to a speed of 2. Looking at the y-axes of these plots compared to those above we can see that this has managed to catch much less of the nitrogen.
 
 ```{python}
 x = np.linspace(0, 10, 500)
@@ -190,7 +189,7 @@ axs[4].set_xlabel("Position")
 fig.show()
 ```
 
-These results are better visualized by looking at the total nitrogen present in the simulation over time. Nitrogen that is carried over the right boundary by the water is lost as runoff and we assume it enters the ecosystem. A good runoff mitigation will keep the total nitrogen present in the simulation high so it does not have a chance to enter the ecosystem and cause harmful algae blooms.
+These results are better visualized by looking at the total nitrogen present in the simulation over time. Nitrogen that is carried over the right boundary by the water is lost as runoff and we assume it enters the ecosystem. Good runoff mitigation will keep the total nitrogen present in the simulation high so it does not have a chance to enter the ecosystem and cause harmful algae blooms.
 
 ```{python}
 
@@ -238,17 +237,18 @@ for i in range(1,3):
 fig2.show()
 ```
 
-Different runoff prevention measures are represented by different advection slow downs at $x = 8$. The first graph represents no runoff prevention (a speed of 10 at $x = 8$) and the last graph represents an advection speed of 1 at $x = 8$. In each scenario, there is a period at the start where the nitrogen level declines very slowly. During this period most of the nitrogen simply has not had enough time to advect to the right boundary. This is followed by a period of rapid decline in nitrogen content that slowly tapers down until there is no nitrogen left. The lower graphs, which have the more significant runoff prevention measure, show a slower nitrogen loss.
+Different runoff prevention measures are represented by different advection slowdowns at $x = 8$. The first graph represents no runoff prevention (a speed of 10 at $x = 8$) and the last graph represents an advection speed of 1 at $x = 8$. In each scenario, there is a period at the start where the nitrogen level declines very slowly. During this period most of the nitrogen simply has not had enough time to advect to the right boundary. This is followed by a period of rapid decline in nitrogen content that slowly tapers down until there is no nitrogen left. The lower graphs, which have the more significant runoff prevention measure, show a slower nitrogen loss. 
 
-The way the model is set up, as long as there is no area of zero velocity, the total nitrogen content will eventually reach zero. For example: if the erosion deposition threshold $n$ is 5 and the velocity over the entire area is 4 then, $$
+The way the model is set up, as long as there is no area of zero velocity, the total nitrogen content will eventually reach zero. For example: if the erosion deposition threshold $n$ is 5 and the velocity over the entire area is 4 then,
+$$
 N_{t} = - N \frac{e^{-1}}{1 + e^{-1}} + C\frac{e^{1}}{1 + e^{1}}\\
 $$
 
-At a glance this implies deposition but eventually any positive $C$ is advected over the right boundary and $C = 0$ so there can't be deposition. Even though $\frac{e^{-1}}{1 + e^{-1}}$ is small it is the only term left so there will actually be erosion. If $C = 0$ and $N > 0$ there will be erosion regardless of velocity. $n$ is not a hard cutoff where erosion becomes deposition, instead it is the velocity where, assuming equal quantities of $C$ and $N$, erosion and deposition are equal. As $v$ decreases, deposition just becomes a more dominant part of the model even though both deposition and erosion are still happening.
+At a glance, this implies deposition but eventually, any positive $C$ is advected over the right boundary, and $C = 0$ so there can't be deposition. Even though $\frac{e^{-1}}{1 + e^{-1}}$ is small it is the only term left so there will actually be erosion. If $C = 0$ and $N > 0$ there will be erosion regardless of velocity. $n$ is not a hard cutoff where erosion becomes deposition, instead, it is the velocity where, assuming equal quantities of $C$ and $N$, erosion and deposition are equal. As $v$ decreases, deposition just becomes a more dominant part of the model even though both deposition and erosion are still happening. 
 
-In the real world it does not rain forever though, so slowing down the rate of nitrogen loss is still important.
+In the real world, it does not rain forever though, so slowing down the rate of nitrogen loss is still important. 
 
-I also looked at the effect of widening the low velocity runoff mitigation area and found similar results.
+I also looked at the effect of widening the low-velocity runoff mitigation area and found similar results.
 
 ```{python}
 def do_simulation(thing):
@@ -295,7 +295,7 @@ fig2.show()
 
 ### Anomalous Solute Transport
 
-Modeling anomalous solute transport is important for understanding water pollution. In normal transport, solute moves consistantly with some linear relationship to time. Anomalous transport typically involves the early or late arrival of a portion of the solute. It tends to occur in porous mediums and when there are multiple different paths for the solute to take. This is often modeled with fractional models as is discussed in @sun2020. As seen earlier, the model developed here can replicate some of these characteristics. Most of the nitrogen reaches the right boundary of the simulation fairly early but small amounts of solute continue to arrive for a long time afterwards.
+Modeling anomalous solute transport is important for understanding water pollution. In normal transport, solute moves consistently with some linear relationship to time. Anomalous transport typically involves the early or late arrival of a portion of the solute. It tends to occur in porous mediums and when there are multiple different paths for the solute to take. This is often modeled with fractional models as is discussed in @sun2020. As seen earlier, the model developed here can replicate some of these characteristics. Most of the nitrogen reaches the right boundary of the simulation fairly early but small amounts of solute continue to arrive for a long time afterwards.  
 
 ```{python}
 #| fig-align: center
@@ -346,20 +346,16 @@ axes3.set_ylabel("Nitrogen Leaving Simulation")
 fig3.show()
 ```
 
-We can show the anomalous transport even better with a different initial condition. We set up alternating areas of fast and slow transport and a uniform initial distribution of nitrogen on the ground. This results in lots of nitrogen leaving the simulation at the start followed by smaller amounts of late arriving nitrogen. When the simulation begins some of the nitrogen gets trapped in areas of low advection. Once trapped, it prevents other nitrogen from becoming trapped because a large enough $N$ can offset the deposition that occurs when advection speed is below $n$. So, most of the nitrogen is carried to then end without getting trapped. Then, as the water becomes free of nitrogen there is no longer any deposition to offset, so the large $N$ just leads to erosion. The trapped nitrogen is slowly eroded and exits the simulation. This lines up very well with the theory of anomalous transport, which can often involve things like traps or side pools where solute is stored temporarily.
+We can show the anomalous transport even better with a different initial condition. We set up alternating areas of fast and slow transport and a uniform initial distribution of nitrogen on the ground. This results in lots of nitrogen leaving the simulation at the start followed by smaller amounts of late-arriving nitrogen. When the simulation begins some of the nitrogen gets trapped in areas of low advection. Once trapped, it prevents other nitrogen from becoming trapped because a large enough $N$ can offset the deposition that occurs when advection speed is below $n$. So, most of the nitrogen is carried to the end without getting trapped. Then, as the water becomes free of nitrogen there is no longer any deposition to offset, so the large $N$ just leads to erosion. The trapped nitrogen is slowly eroded and exits the simulation. This lines up very well with the theory of anomalous transport, which can often involve things like traps or side pools where the solute is stored temporarily.
 
 ## Future Work
 
-There is so much I would be interested in pursing more if I had another two months to continue this project. I would first be interested in developing a more data driven approach to generating the spacially varying advection fields. This might require another mathematical model but it could also be done with an easier statistical approach using the data presented in @liu2020.
+There is so much I would be interested in pursuing more if I had another two months to continue this project. I would first be interested in developing a more data driven approach to generating the spatially varying advection fields. This might require another mathematical model but it could also be done with an easier statistical approach using the data presented in @liu2020.
 
-Another version of the model I used briefly had two different thresholds which more accurately matches how erosion and deposition work in the real world. The behavior of that model was extreemly similar to the current model but I think it would be interesting to set up a couple of simulations to explore how they differ more methodically.
+Another version of the model I used briefly had two different thresholds which more accurately matches how erosion and deposition work in the real world. The behavior of that model was extremely similar to the current model but I think it would be interesting to set up a couple of simulations to explore how they differ more methodically.
 
-Implementing this model in 3D would be very straight forward using skfdiff and is also something I would want to look into. I think the main issue would be capturing how water moves around obstacles in the real world.
+Implementing this model in 3D would be very straightforward using skfdiff and is also something I would want to look into. I think the main issue would be capturing how water moves around obstacles in the real world. 
 
-Moving away from just looking at nitrogen runoff I am interested in exploring what behavior results if velocity is made to depend on $N$. $N$, in that case, might represent something like soil that slows down water but can also be picked up and carried by it.
-
-## Slides
-
-[Presentation Slides](https://nmreimer.github.io/presentation.html)
-
+Moving away from just looking at nitrogen runoff I am interested in exploring what behavior results if velocity is made to depend on $N$. $N$, in that case, might represent something like soil that slows down water but can also be picked up and carried by it. 
+  
 ## References
