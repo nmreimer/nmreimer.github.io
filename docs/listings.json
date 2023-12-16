@@ -3,6 +3,7 @@
     "listing": "/projects.html",
     "items": [
       "/projects/pagerank/index.html",
+      "/projects/mathmodeling/index.html",
       "/projects/doublerobust/index.html",
       "/projects/definingachievement/index.html",
       "/projects/asteroids/index.html"
