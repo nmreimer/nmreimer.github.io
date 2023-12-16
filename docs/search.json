@@ -1,84 +1,84 @@
 [
   {
-    "objectID": "other/presentation.html#the-problem",
-    "href": "other/presentation.html#the-problem",
+    "objectID": "presentation.html#the-problem",
+    "href": "presentation.html#the-problem",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "The Problem",
     "text": "The Problem\nNitrogen Fertilizer \\(+\\) Rain \\(\\implies\\) Nitrogen Runoff\nNitrogen Runoff \\(\\implies\\) Harmful Algae Blooms\nOther runoff is also terrible"
   },
   {
-    "objectID": "other/presentation.html#existing-models",
-    "href": "other/presentation.html#existing-models",
+    "objectID": "presentation.html#existing-models",
+    "href": "presentation.html#existing-models",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "Existing Models",
     "text": "Existing Models\n\n\n\nEquivalent exchange layer\n\nSurface and soil exchange nutrients\n\nFADE (Fractional Advection Diffusion Equations)\n\nMobile-immobile model"
   },
   {
-    "objectID": "other/presentation.html#a-potential-model",
-    "href": "other/presentation.html#a-potential-model",
+    "objectID": "presentation.html#a-potential-model",
+    "href": "presentation.html#a-potential-model",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "A Potential Model",
     "text": "A Potential Model\n\nTwo values: Nitrogen in the soil \\(N\\) and Nitrogen in the water \\(C\\).\n\\(C\\) obeys basic advection-diffusion.\nTransfers between \\(N\\) and \\(C\\) depend on \\(N\\), \\(C\\), velocity, and a parameter \\(n\\).\nVelocity greater than \\(n\\) \\(\\implies\\) erosion*\nVelocity less than \\(n\\) \\(\\implies\\) deposition*"
   },
   {
-    "objectID": "other/presentation.html#model-equations",
-    "href": "other/presentation.html#model-equations",
+    "objectID": "presentation.html#model-equations",
+    "href": "presentation.html#model-equations",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "Model Equations",
     "text": "Model Equations\n\n\n\\[\\begin{align}\nC_{t} = -(Cv)_{x} + kC_{xx} + N \\frac{e^{v-n}}{1 + e^{v-n}} - C\\frac{e^{n-v}}{1 + e^{n-v}}& \\\\\n\\\\\nN_{t} = - N \\frac{e^{v-n}}{1 + e^{v-n}} + C\\frac{e^{n-v}}{1 + e^{n-v}}&\n\\end{align}\\]"
   },
   {
-    "objectID": "other/presentation.html#assumptions",
-    "href": "other/presentation.html#assumptions",
+    "objectID": "presentation.html#assumptions",
+    "href": "presentation.html#assumptions",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "Assumptions",
     "text": "Assumptions\n\nSingle erosion-deposition threshold\n\nReal world better modeled with two thresholds(think static and dynamic friction)\n\nAdvection does not vary with time\nQuantity of water ignored\nImpact of raindrops ignored\nWater only picks up nitrogen"
   },
   {
-    "objectID": "other/presentation.html#implementation-in-scikit-fdiff",
-    "href": "other/presentation.html#implementation-in-scikit-fdiff",
+    "objectID": "presentation.html#implementation-in-scikit-fdiff",
+    "href": "presentation.html#implementation-in-scikit-fdiff",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "Implementation in scikit-fdiff",
     "text": "Implementation in scikit-fdiff\n\nbc = {(\"C\", \"x\"): (\"dirichlet\", \"dirichlet\"),\n      (\"N\", \"x\"): (\"dirichlet\", \"dirichlet\")}\n\nmodel = Model([\"-dx(C*v) + k*(dxxC) + N*e**(v-n)/(1+e**(v-n)) - C*e**(n-v)/(1+e**(n-v))\",\n           \"-N*e**(v-n)/(1+e**(v-n)) + C*e**(n-v)/(1+e**(n-v))\"],\n           [\"C(x)\", \"N(x)\"],\n           parameters=[\"v(x)\",\"k\",\"n\",\"e\"],\n           boundary_conditions = bc)\n\n\nx = np.linspace(0, 10, 500)\n\nxx = np.meshgrid(x)\nC = 0\nN = np.exp(-(.25*(x-5)**2)/2)\nN[0] = 0\nN[-1] = 0\n\nv = 10 - 9.5*np.exp(-((x-8)**2)/2)\n\ninitial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)\n\nsimulation = Simulation(model, initial_fields, dt=.1, tmax=20)"
   },
   {
-    "objectID": "other/presentation.html#initial-condition",
-    "href": "other/presentation.html#initial-condition",
+    "objectID": "presentation.html#initial-condition",
+    "href": "presentation.html#initial-condition",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "Initial Condition",
     "text": "Initial Condition"
   },
   {
-    "objectID": "other/presentation.html#output",
-    "href": "other/presentation.html#output",
+    "objectID": "presentation.html#output",
+    "href": "presentation.html#output",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "Output",
     "text": "Output"
   },
   {
-    "objectID": "other/presentation.html#total-nitrogen",
-    "href": "other/presentation.html#total-nitrogen",
+    "objectID": "presentation.html#total-nitrogen",
+    "href": "presentation.html#total-nitrogen",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "Total Nitrogen",
     "text": "Total Nitrogen"
   },
   {
-    "objectID": "other/presentation.html#more-total-nitrogen",
-    "href": "other/presentation.html#more-total-nitrogen",
+    "objectID": "presentation.html#more-total-nitrogen",
+    "href": "presentation.html#more-total-nitrogen",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "More Total Nitrogen",
     "text": "More Total Nitrogen"
   },
   {
-    "objectID": "other/presentation.html#more-anomalous-solute-transport",
-    "href": "other/presentation.html#more-anomalous-solute-transport",
+    "objectID": "presentation.html#more-anomalous-solute-transport",
+    "href": "presentation.html#more-anomalous-solute-transport",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "More Anomalous Solute Transport",
     "text": "More Anomalous Solute Transport"
   },
   {
-    "objectID": "other/presentation.html#references",
-    "href": "other/presentation.html#references",
+    "objectID": "presentation.html#references",
+    "href": "presentation.html#references",
     "title": "Modeling Advection-Diffusion with Erosion and Depositon",
     "section": "",
     "text": "Liu, H. Q., J. H. Yang, C. X. Liu, Y. F. Diao, D. P. Ma, F. H. Li, A. E. Rahma, and T. W. Lei. 2020. “Flow Velocity on Cultivated Soil Slope with Wheat Straw Incorporation.” Journal of Hydrology 584 (May): 124667. https://doi.org/10.1016/j.jhydrol.2020.124667.\n\n\nMichael Beman, J., Kevin R. Arrigo, and Pamela A. Matson. 2005. “Agricultural Runoff Fuels Large Phytoplankton Blooms in Vulnerable Areas of the Ocean.” Nature 434 (7030): 211–14. https://doi.org/10.1038/nature03370.\n\n\nShao, Fanfan, Wanghai Tao, Quanjiu Wang, Junhu Wu, Lijun Su, Haokui Yan, and Yibo Zhang. 2023. “A Mathematical Model Using an Equivalent Exchange Layer for Predicting Raindrop-Induced Nutrient Ejection from Soil to Runoff on Bare and Vegetated Slopes.” Journal of Hydrology 620 (May): 129546. https://doi.org/10.1016/j.jhydrol.2023.129546.\n\n\nShumway, Sandra E., JoAnn M. Burkholder, and Steve L. Morton. 2018. Harmful Algal Blooms: A Compendium Desk Reference. Wiley Blackwell, John Wiley &amp; Sons, Inc.\n\n\nSun, Liwei, Han Qiu, Chuanhao Wu, Jie Niu, and Bill X. Hu. 2020. “A Review of Applications of Fractional Advection-Dispersion Equations for Anomalous Solute Transport in Surface and Subsurface Water.” WIREs Water 7 (4). https://doi.org/10.1002/wat2.1448."

@@ -360,6 +360,6 @@ Moving away from just looking at nitrogen runoff I am interested in exploring wh
 
 ## Slides
 
-[Presentation Slides](https://nmreimer.github.io/other/presentation.html)
+[Presentation Slides](https://nmreimer.github.io/presentation.html)
 
 ## References
