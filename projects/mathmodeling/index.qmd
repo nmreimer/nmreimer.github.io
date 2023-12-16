@@ -358,4 +358,8 @@ Implementing this model in 3D would be very straight forward using skfdiff and i
 
 Moving away from just looking at nitrogen runoff I am interested in exploring what behavior results if velocity is made to depend on $N$. $N$, in that case, might represent something like soil that slows down water but can also be picked up and carried by it.
 
+## Slides
+
+[Presentation Slides](https://nmreimer.github.io/other/presentation.html)
+
 ## References

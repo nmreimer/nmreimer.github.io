@@ -58,5 +58,8 @@
   },
   "projects/mathmodeling/index.qmd": {
     "index.html": "4e3e9d13"
+  },
+  "other/presentation.qmd": {
+    "presentation.html": "c6010564"
   }
 }

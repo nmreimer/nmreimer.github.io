@@ -1,6 +1,6 @@
 ---
-title: "Doubly Robust Estimators"
-description: "An Exploration of a Double Robust Estimator for Causal Inference"
+title: "Defining Achievement"
+description: "Investigating the Factors that Define Educational Achievement using California as a Case Study"
 date: "2023-04-17"
 
 categories:
@@ -14,3 +14,5 @@ execute:
   warning: false
   message: false
 ---
+
+[Link to Project Site](https://jeremyhub.ninja/Beyond-The-Report-Card/)
