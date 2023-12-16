@@ -1,0 +1,319 @@
+---
+title: "Modeling Advection-Diffusion with Erosion and Depositon"
+date: "2023-12-16"
+format:
+  revealjs: 
+    theme: custom.scss
+editor: visual
+jupyter: conda-env-mathmodeling-py
+execute:
+  freeze: auto
+  echo: false
+  warning: false
+  message: false
+bibliography: references.bib
+---
+
+## The Problem
+
+Nitrogen Fertilizer $+$ Rain $\implies$ Nitrogen Runoff
+
+Nitrogen Runoff $\implies$ Harmful Algae Blooms
+
+Other runoff is also terrible
+
+---
+nocite: |
+  @michaelbeman2005, @liu2020, @shao2023, @sun2020, @HAB2018
+---
+
+## Existing Models
+
+::: columns
+::: {.column width="50%"}
+-   Equivalent exchange layer
+    -   Surface and soil exchange nutrients
+-   FADE (Fractional Advection Diffusion Equations)
+    -   Mobile-immobile model
+:::
+
+::: {.column width="45%"}
+![](EEL.jpg)
+:::
+:::
+
+## A Potential Model
+
+-   Two values: Nitrogen in the soil $N$ and Nitrogen in the water $C$.
+-   $C$ obeys basic advection-diffusion.
+-   Transfers between $N$ and $C$ depend on $N$, $C$, velocity, and a parameter $n$.
+-   Velocity greater than $n$ $\implies$ erosion\*
+-   Velocity less than $n$ $\implies$ deposition\*
+
+## Model Equations
+
+::: columns
+::: {.column width="100%"}
+```{=tex}
+\begin{align}
+C_{t} = -(Cv)_{x} + kC_{xx} + N \frac{e^{v-n}}{1 + e^{v-n}} - C\frac{e^{n-v}}{1 + e^{n-v}}& \\
+\\
+N_{t} = - N \frac{e^{v-n}}{1 + e^{v-n}} + C\frac{e^{n-v}}{1 + e^{n-v}}&
+\end{align}
+```
+:::
+:::
+
+## Assumptions
+
+-   Single erosion-deposition threshold
+    -   Real world better modeled with two thresholds(think static and dynamic friction)
+-   Advection does not vary with time
+-   Quantity of water ignored
+-   Impact of raindrops ignored
+-   Water only picks up nitrogen
+
+## Implementation in scikit-fdiff
+
+```{python}
+from skfdiff import Model, Simulation
+import numpy as np
+import pandas as pd
+import pylab
+from scipy.signal.windows import gaussian
+import matplotlib.pyplot as plt
+
+# https://scikit-fdiff.readthedocs.io/en/stable/introduction.html
+```
+
+```{python}
+#| echo: true
+#| code-line-numbers: "4,5"
+
+bc = {("C", "x"): ("dirichlet", "dirichlet"),
+      ("N", "x"): ("dirichlet", "dirichlet")}
+
+model = Model(["-dx(C*v) + k*(dxxC) + N*e**(v-n)/(1+e**(v-n)) - C*e**(n-v)/(1+e**(n-v))",
+           "-N*e**(v-n)/(1+e**(v-n)) + C*e**(n-v)/(1+e**(n-v))"],
+           ["C(x)", "N(x)"],
+           parameters=["v(x)","k","n","e"],
+           boundary_conditions = bc)
+```
+
+```{python}
+#| echo: true
+#| code-line-numbers: "5,9,11" 
+x = np.linspace(0, 10, 500)
+
+xx = np.meshgrid(x)
+C = 0
+N = np.exp(-(.25*(x-5)**2)/2)
+N[0] = 0
+N[-1] = 0
+
+v = 10 - 9.5*np.exp(-((x-8)**2)/2)
+
+initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+
+simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+```
+
+## Initial Condition
+
+```{python}
+#| fig-align: center
+x = np.linspace(0, 10, 500)
+
+xx = np.meshgrid(x)
+C = 0
+N = np.exp(-(.25*(x-5)**2)/2)
+N[0] = 0
+N[-1] = 0
+
+v = 10 - 7.5*np.exp(-((x-8)**2)/2)
+
+initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+
+plt.plot(initial_fields["C"])
+plt.plot(initial_fields["N"])
+plt.plot(initial_fields["v"])
+plt.legend(["Nitrogen in Water","Nitrogen on Ground","Velocity"])
+plt.title("Initial Condition and Velocity Function")
+plt.xlabel("X")
+plt.ylabel("Value")
+plt.show()
+```
+
+## Output
+
+```{python}
+#| fig-align: center
+simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+container = simulation.attach_container()
+tmax, final_fields = simulation.run()
+
+data = container.data.to_dataframe().reset_index()
+data0 = data[np.isclose(data['t'],0)]
+data1 = data[np.isclose(data['t'],.5)]
+data2 = data[np.isclose(data['t'],1)]
+data3 = data[np.isclose(data['t'],1.5)]
+data4 = data[np.isclose(data['t'],2)]
+
+fig, axs = plt.subplots(5,sharex=True,sharey=True)
+axs[0].plot(data0.x, data0.C)
+axs[0].plot(data0.x, data0.N)
+
+axs[1].plot(data1.x, data1.C)
+axs[1].plot(data1.x, data1.N)
+
+axs[2].plot(data2.x, data2.C)
+axs[2].plot(data2.x, data2.N)
+axs[2].set_ylabel("Quantity")
+
+axs[3].plot(data3.x, data3.C)
+axs[3].plot(data3.x, data3.N)
+
+axs[4].plot(data4.x, data4.C)
+axs[4].plot(data4.x, data4.N)
+
+fig.legend(["Nitrogen in Water","Nitrogen on Ground"])
+axs[0].set_title("Model at T = 0, 0.5, 1, 1.5, 2")
+axs[4].set_xlabel("Position")
+
+fig.show()
+```
+
+## Total Nitrogen
+
+```{python}
+def do_simulation(speedbump):
+      x = np.linspace(0, 10, 100)
+      xx = np.meshgrid(x)
+      C = 0
+      N = np.exp(-(.25*(x-5)**2)/2)
+      N[0] = 0
+      N[-1] = 0
+
+      v = 10 - speedbump*np.exp(-((x-8)**2)/2)
+
+      initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+
+      simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+      container = simulation.attach_container()
+      tmax, final_fields = simulation.run()
+
+      output = container.data.sum(dim='x').to_dataframe().reset_index()
+      output.insert(loc = 0, column = 'speedbump', value = np.tile(speedbump,201))
+
+      output = output.assign(total = output.C + output.N)
+      return pd.DataFrame(output)
+```
+
+```{python}
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 8
+
+fig2, axes2 = plt.subplots(3,sharex=True,sharey=True)
+vals = (0, 4, 8)
+A = do_simulation(vals[0])
+axes2[0].plot(A.t, A.total)
+axes2[0].set_title("Adjusting the Minimum Speed of Runoff Mitigation")
+axes2[0].set_ylabel(str(10 - vals[0]))
+for i in range(1,3):
+      B = do_simulation(vals[i])
+      axes2[i].plot(B.t, B.total)
+      if (i == 2):
+          (axes2[i].set_xlabel("Time"))
+      axes2[i].set_ylabel(str(10 - vals[i]))
+
+fig2.show()
+```
+
+## More Total Nitrogen
+
+```{python}
+def do_simulation(thing):
+      x = np.linspace(0, 10, 100)
+      xx = np.meshgrid(x)
+      C = 0
+      N = np.exp(-(.25*(x-5)**2)/2)
+      N[0] = 0
+      N[-1] = 0
+
+      v = 10 - 6*np.exp(-((x-8)**2)/(thing + 1))
+
+      initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+
+      simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+      container = simulation.attach_container()
+      tmax, final_fields = simulation.run()
+
+      output = container.data.sum(dim='x').to_dataframe().reset_index()
+      output.insert(loc = 0, column = 'thing', value = np.tile(thing,201))
+
+      output = output.assign(total = output.C + output.N)
+      return pd.DataFrame(output)
+```
+
+```{python}
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 8
+
+fig2, axes2 = plt.subplots(3,sharex=True,sharey=True)
+vals = (0, 4, 8)
+A = do_simulation(vals[0])
+axes2[0].plot(A.t, A.total)
+axes2[0].set_title("Adjusting the Width of Runoff Mitigation")
+for i in range(1,3):
+      B = do_simulation(vals[i])
+      axes2[i].plot(B.t, B.total)
+      if (i == 2):
+          (axes2[i].set_xlabel("Time"))
+
+fig2.show()
+```
+
+## More Anomalous Solute Transport
+
+```{python}
+x = np.linspace(0, 10, 1000)
+
+xx = np.meshgrid(x)
+C = 0
+N = np.linspace(1,1,1000)
+N[0] = 0
+N[-1] = 0
+
+v = np.sin(5*x)*3 + 5
+initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=6, e=2.7)
+```
+
+```{python}
+simulation = Simulation(model, initial_fields, dt=.1, tmax=50)
+container = simulation.attach_container()
+tmax, final_fields = simulation.run()
+```
+
+```{python}
+#| fig-align: center
+#| fig-width: 8
+
+fig3, axes3 = plt.subplots(1)
+
+data = container.data.to_dataframe().reset_index().melt(id_vars = ["t","x"], value_vars=["C","N"])
+
+data = container.data.sum(dim='x').to_dataframe().reset_index()
+
+data = data.assign(total = data.C + data.N)
+
+data = data.assign(dtotal_dt = -data.total.diff()/ data.t.diff())
+
+axes3.plot(data.t, data.dtotal_dt)
+axes3.set_xlabel("Time")
+axes3.set_ylabel("Nitrogen Leaving Simulation")
+fig3.show()
+```
+
+------------------------------------------------------------------------
