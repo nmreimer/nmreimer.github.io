@@ -1,0 +1,361 @@
+---
+title: "Modeling Advection Diffusion with Erosion and Depositon"
+author: "Nathaniel Reimer"
+date: '2023-12-15'
+format: html
+editor: visual
+jupyter: conda-env-mathmodeling-py
+execute:
+  freeze: auto
+  echo: false
+  warning: false
+  message: false
+bibliography: references.bib
+---
+
+## Introduction
+
+Pollutant runoff is harmful to many ecosystems. Agricultural runoff can be particularly harmful to ecosystems because it contains a high concentration of nitrogen. This nitrogen is primarily from nitrogen fertilizers vital to global food supplies. When nitrogen is allowed to enter oceans and waterways it can fuel phytoplankton blooms [@michaelbeman2005]. Phytoplankton blooms, particularly those involving toxix species, can devastate ecosystems and the people that live near and rely on those ecosystems [@HAB2018]. There are a variety of mitigation methods for reducing the amount of nitrogen that is carried out of agricultural areas by runoff.
+
+## A Potential Model
+
+We represent nitrogen dissolved in water with $C$ and nitrogen deposited on the ground with $N$. Nitrogen in water is subject to simple advection-diffusion: $C_{t} = -(Cv)_{x} + kC_{xx}$. Nitrogen on the ground is stationary. Some hydrological models of pollutant transport use similar logical frameworks. Shao et al. use an equivalent exchange layer to mediate between surface runoff and nutrients stored in the ground [@shao2023]. A fractional mobile-immobile model is similarly predicated on simple advection diffusion with mobile and immobile components of the solute [@sun2020]. Both models present complicated methods for transfer between the two states.
+
+```{python}
+from skfdiff import Model, Simulation
+import numpy as np
+import pandas as pd
+import pylab
+from scipy.signal.windows import gaussian
+import matplotlib.pyplot as plt
+
+# https://scikit-fdiff.readthedocs.io/en/stable/introduction.html
+```
+
+$$
+C_{t} = -(Cv)_{x} + kC_{xx} + N \frac{e^{v-n}}{1 + e^{v-n}} - C\frac{e^{n-v}}{1 + e^{n-v}}\\  
+$$
+
+$$
+N_{t} = - N \frac{e^{v-n}}{1 + e^{v-n}} + C\frac{e^{n-v}}{1 + e^{n-v}}\\
+$$
+
+We represent transfers between ground nitrogen and dissolved nitrogen in this model with $N \frac{e^{v-n}}{1 + e^{v-n}} - C\frac{e^{n-v}}{1 + e^{n-v}}$. For fixed levels of $N$ and $C$, a velocity $v > n$ will lead to erosion. For $v >> n$, the rate of erosion approaches $N$. On the other hand, if velocity $v < n$ deposition will occur. For $v << n$, the rate of deposition approaches $C$. This ensures that no deposition will occur if the dissolved concentration is zero and no erosion will occur if the concentration on the ground is zero.
+
+The simplicity of the model, of course, comes at the expense of accuracy.
+
+The model assumes that there is a single erosion-deposition threshold ($n$); that advection does not vary with time; that the quantity of water does not have an impact; that raindrops do not have an impact; and that water only interacts with nitrogen. In the real world we would likely see two thresholds for erosion-deposition [@Earle2015]. Raindrops, as seen in the equivalent exchange layer model, are big drivers of sediment transport. Also, in the real world, water carrying other things would impact it's ability to pick up nitrogen.
+
+### Implementation with Scikit FiniteDiff
+
+A finite difference scheme lets us see the behavior of the model easily. Using the Scikit Finite Difference package we can enter the equations symbolically, set boundary conditions, set initial conditions, and run simulations. This greatly simplifies the modeling workflow.
+
+```{python}
+#| echo: true
+bc = {("C", "x"): ("dirichlet", "dirichlet"),
+      ("N", "x"): ("dirichlet", "dirichlet")}
+
+model = Model(["-dx(C*v) + k*(dxxC) + N*e**(v-n)/(1+e**(v-n)) - C*e**(n-v)/(1+e**(n-v))",
+               "-N*e**(v-n)/(1+e**(v-n)) + C*e**(n-v)/(1+e**(n-v))"],
+              ["C(x)", "N(x)"],
+              parameters=["v(x)","k","n","e"],
+              boundary_conditions = bc)
+
+```
+
+```{python}
+#| fig-align: center
+
+x = np.linspace(0, 10, 500)
+
+xx = np.meshgrid(x)
+C = 0
+N = np.exp(-(.25*(x-5)**2)/2)
+N[0] = 0
+N[-1] = 0
+
+v = 10 - 9.5*np.exp(-((x-8)**2)/2)
+
+initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+plt.plot(initial_fields["C"])
+plt.plot(initial_fields["N"])
+plt.plot(initial_fields["v"])
+plt.legend(["Nitrogen in Water","Nitrogen on Ground","Velocity"])
+plt.title("Initial Condition and Velocity Function")
+plt.xlabel("X")
+plt.ylabel("Value")
+plt.show()
+```
+
+## Model Behavior
+
+```{python}
+simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+container = simulation.attach_container()
+tmax, final_fields = simulation.run()
+
+```
+
+```{python}
+#| fig-align: center
+simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+container = simulation.attach_container()
+tmax, final_fields = simulation.run()
+
+data = container.data.to_dataframe().reset_index()
+data0 = data[np.isclose(data['t'],0)]
+data1 = data[np.isclose(data['t'],.5)]
+data2 = data[np.isclose(data['t'],1)]
+data3 = data[np.isclose(data['t'],1.5)]
+data4 = data[np.isclose(data['t'],2)]
+
+fig, axs = plt.subplots(5,sharex=True,sharey=True)
+axs[0].plot(data0.x, data0.C)
+axs[0].plot(data0.x, data0.N)
+
+axs[1].plot(data1.x, data1.C)
+axs[1].plot(data1.x, data1.N)
+
+axs[2].plot(data2.x, data2.C)
+axs[2].plot(data2.x, data2.N)
+axs[2].set_ylabel("Quantity")
+
+axs[3].plot(data3.x, data3.C)
+axs[3].plot(data3.x, data3.N)
+
+axs[4].plot(data4.x, data4.C)
+axs[4].plot(data4.x, data4.N)
+
+fig.legend(["Nitrogen in Water","Nitrogen on Ground"])
+axs[0].set_title("Model at T = 0, 0.5, 1, 1.5, 2")
+axs[4].set_xlabel("Position")
+
+fig.show()
+```
+
+The basic model behavior is working as intended. Nitrogen from the ground is picked up from areas where velocity is high and deposited in the area where velocity is low.
+
+### Modeling with Different Advection
+
+To get a better grasp on the behavior of the model we run it with a variety of different initial conditions. Here we look at a less effective runoff prevention measure that does not slow down the water as much. In the original the speed of advection is slowed to .5 at $x = 8$, in this second run it only slows to a speed of 2. Looking at the y-axes of these plots compared to those above we can see that this has managed to catch much less of the nitrogen.
+
+```{python}
+x = np.linspace(0, 10, 500)
+
+xx = np.meshgrid(x)
+C = 0
+N = np.exp(-(.25*(x-5)**2)/2)
+N[0] = 0
+N[-1] = 0
+
+v = 10 - 7.5*np.exp(-((x-8)**2)/2)
+
+initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+```
+
+```{python}
+#| fig-align: center
+simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+container = simulation.attach_container()
+tmax, final_fields = simulation.run()
+
+data = container.data.to_dataframe().reset_index()
+data0 = data[np.isclose(data['t'],0)]
+data1 = data[np.isclose(data['t'],.5)]
+data2 = data[np.isclose(data['t'],1)]
+data3 = data[np.isclose(data['t'],1.5)]
+data4 = data[np.isclose(data['t'],2)]
+
+fig, axs = plt.subplots(5,sharex=True,sharey=True)
+axs[0].plot(data0.x, data0.C)
+axs[0].plot(data0.x, data0.N)
+
+axs[1].plot(data1.x, data1.C)
+axs[1].plot(data1.x, data1.N)
+
+axs[2].plot(data2.x, data2.C)
+axs[2].plot(data2.x, data2.N)
+axs[2].set_ylabel("Quantity")
+
+axs[3].plot(data3.x, data3.C)
+axs[3].plot(data3.x, data3.N)
+
+axs[4].plot(data4.x, data4.C)
+axs[4].plot(data4.x, data4.N)
+
+fig.legend(["Nitrogen in Water","Nitrogen on Ground"])
+axs[0].set_title("Model at T = 0, 0.5, 1, 1.5, 2")
+axs[4].set_xlabel("Position")
+
+fig.show()
+```
+
+These results are better visualized by looking at the total nitrogen present in the simulation over time. Nitrogen that is carried over the right boundary by the water is lost as runoff and we assume it enters the ecosystem. A good runoff mitigation will keep the total nitrogen present in the simulation high so it does not have a chance to enter the ecosystem and cause harmful algae blooms.
+
+```{python}
+
+def do_simulation(speedbump):
+      x = np.linspace(0, 10, 100)
+      xx = np.meshgrid(x)
+      C = 0
+      N = np.exp(-(.25*(x-5)**2)/2)
+      N[0] = 0
+      N[-1] = 0
+
+      v = 10 - speedbump*np.exp(-((x-8)**2)/2)
+
+      initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+
+      simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+      container = simulation.attach_container()
+      tmax, final_fields = simulation.run()
+
+      output = container.data.sum(dim='x').to_dataframe().reset_index()
+      output.insert(loc = 0, column = 'speedbump', value = np.tile(speedbump,201))
+
+      output = output.assign(total = output.C + output.N)
+      return pd.DataFrame(output)
+```
+
+```{python}
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 8
+
+fig2, axes2 = plt.subplots(3,sharex=True,sharey=True)
+vals = (0, 4, 8)
+A = do_simulation(vals[0])
+axes2[0].plot(A.t, A.total)
+axes2[0].set_title("Adjusting the Minimum Speed of Runoff Mitigation")
+axes2[0].set_ylabel(str(10 - vals[0]))
+for i in range(1,3):
+      B = do_simulation(vals[i])
+      axes2[i].plot(B.t, B.total)
+      if (i == 2):
+          (axes2[i].set_xlabel("Time"))
+      axes2[i].set_ylabel(str(10 - vals[i]))
+
+fig2.show()
+```
+
+Different runoff prevention measures are represented by different advection slow downs at $x = 8$. The first graph represents no runoff prevention (a speed of 10 at $x = 8$) and the last graph represents an advection speed of 1 at $x = 8$. In each scenario, there is a period at the start where the nitrogen level declines very slowly. During this period most of the nitrogen simply has not had enough time to advect to the right boundary. This is followed by a period of rapid decline in nitrogen content that slowly tapers down until there is no nitrogen left. The lower graphs, which have the more significant runoff prevention measure, show a slower nitrogen loss.
+
+The way the model is set up, as long as there is no area of zero velocity, the total nitrogen content will eventually reach zero. For example: if the erosion deposition threshold $n$ is 5 and the velocity over the entire area is 4 then, $$
+N_{t} = - N \frac{e^{-1}}{1 + e^{-1}} + C\frac{e^{1}}{1 + e^{1}}\\
+$$
+
+At a glance this implies deposition but eventually any positive $C$ is advected over the right boundary and $C = 0$ so there can't be deposition. Even though $\frac{e^{-1}}{1 + e^{-1}}$ is small it is the only term left so there will actually be erosion. If $C = 0$ and $N > 0$ there will be erosion regardless of velocity. $n$ is not a hard cutoff where erosion becomes deposition, instead it is the velocity where, assuming equal quantities of $C$ and $N$, erosion and deposition are equal. As $v$ decreases, deposition just becomes a more dominant part of the model even though both deposition and erosion are still happening.
+
+In the real world it does not rain forever though, so slowing down the rate of nitrogen loss is still important.
+
+I also looked at the effect of widening the low velocity runoff mitigation area and found similar results.
+
+```{python}
+def do_simulation(thing):
+      x = np.linspace(0, 10, 100)
+      xx = np.meshgrid(x)
+      C = 0
+      N = np.exp(-(.25*(x-5)**2)/2)
+      N[0] = 0
+      N[-1] = 0
+
+      v = 10 - 6*np.exp(-((x-8)**2)/(thing + 1))
+
+      initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=5, e=2.7)
+
+      simulation = Simulation(model, initial_fields, dt=.1, tmax=20)
+      container = simulation.attach_container()
+      tmax, final_fields = simulation.run()
+
+      output = container.data.sum(dim='x').to_dataframe().reset_index()
+      output.insert(loc = 0, column = 'thing', value = np.tile(thing,201))
+
+      output = output.assign(total = output.C + output.N)
+      return pd.DataFrame(output)
+```
+
+```{python}
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 8
+
+fig2, axes2 = plt.subplots(3,sharex=True,sharey=True)
+vals = (0, 4, 8)
+A = do_simulation(vals[0])
+axes2[0].plot(A.t, A.total)
+axes2[0].set_title("Adjusting the Width of Runoff Mitigation")
+for i in range(1,3):
+      B = do_simulation(vals[i])
+      axes2[i].plot(B.t, B.total)
+      if (i == 2):
+          (axes2[i].set_xlabel("Time"))
+
+fig2.show()
+```
+
+### Anomalous Solute Transport
+
+Modeling anomalous solute transport is important for understanding water pollution. In normal transport, solute moves consistantly with some linear relationship to time. Anomalous transport typically involves the early or late arrival of a portion of the solute. It tends to occur in porous mediums and when there are multiple different paths for the solute to take. This is often modeled with fractional models as is discussed in @sun2020. As seen earlier, the model developed here can replicate some of these characteristics. Most of the nitrogen reaches the right boundary of the simulation fairly early but small amounts of solute continue to arrive for a long time afterwards.
+
+```{python}
+#| fig-align: center
+#| fig-width: 8
+x = np.linspace(0, 10, 1000)
+
+xx = np.meshgrid(x)
+C = 0
+N = np.linspace(1,1,1000)
+N[0] = 0
+N[-1] = 0
+
+v = np.sin(5*x)*3 + 5
+initial_fields = model.Fields(x=x, C=C, N=N, k=.1, v=v, n=6, e=2.7)
+initial_fields["C"].plot()
+initial_fields["N"].plot()
+initial_fields["v"].plot()
+plt.legend(["Nitrogen in Water","Nitrogen on Ground","Velocity"])
+plt.title("Initial Condition and Velocity Function")
+plt.xlabel("X")
+plt.ylabel("Value")
+plt.show()
+```
+
+```{python}
+simulation = Simulation(model, initial_fields, dt=.1, tmax=50)
+container = simulation.attach_container()
+tmax, final_fields = simulation.run()
+```
+
+```{python}
+#| fig-align: center
+#| fig-width: 8
+
+fig3, axes3 = plt.subplots(1)
+
+data = container.data.to_dataframe().reset_index().melt(id_vars = ["t","x"], value_vars=["C","N"])
+
+data = container.data.sum(dim='x').to_dataframe().reset_index()
+
+data = data.assign(total = data.C + data.N)
+
+data = data.assign(dtotal_dt = -data.total.diff()/ data.t.diff())
+
+axes3.plot(data.t, data.dtotal_dt)
+axes3.set_xlabel("Time")
+axes3.set_ylabel("Nitrogen Leaving Simulation")
+fig3.show()
+```
+
+We can show the anomalous transport even better with a different initial condition. We set up alternating areas of fast and slow transport and a uniform initial distribution of nitrogen on the ground. This results in lots of nitrogen leaving the simulation at the start followed by smaller amounts of late arriving nitrogen. When the simulation begins some of the nitrogen gets trapped in areas of low advection. Once trapped, it prevents other nitrogen from becoming trapped because a large enough $N$ can offset the deposition that occurs when advection speed is below $n$. So, most of the nitrogen is carried to then end without getting trapped. Then, as the water becomes free of nitrogen there is no longer any deposition to offset, so the large $N$ just leads to erosion. The trapped nitrogen is slowly eroded and exits the simulation. This lines up very well with the theory of anomalous transport, which can often involve things like traps or side pools where solute is stored temporarily.
+
+## Future Work
+
+There is so much I would be interested in pursing more if I had another two months to continue this project. I would first be interested in developing a more data driven approach to generating the spacially varying advection fields. This might require another mathematical model but it could also be done with an easier statistical approach using the data presented in @liu2020.
+
+Another version of the model I used briefly had two different thresholds which more accurately matches how erosion and deposition work in the real world. The behavior of that model was extreemly similar to the current model but I think it would be interesting to set up a couple of simulations to explore how they differ more methodically.
+
+Implementing this model in 3D would be very straight forward using skfdiff and is also something I would want to look into. I think the main issue would be capturing how water moves around obstacles in the real world.
+
+Moving away from just looking at nitrogen runoff I am interested in exploring what behavior results if velocity is made to depend on $N$. $N$, in that case, might represent something like soil that slows down water but can also be picked up and carried by it.
+
+## References

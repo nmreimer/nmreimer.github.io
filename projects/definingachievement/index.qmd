@@ -1,0 +1,16 @@
+---
+title: "Doubly Robust Estimators"
+description: "An Exploration of a Double Robust Estimator for Causal Inference"
+date: "2023-04-17"
+
+categories:
+  - Data Science
+  - Education
+about:
+  template: marquee
+execute:
+  freeze: auto
+  echo: false
+  warning: false
+  message: false
+---
