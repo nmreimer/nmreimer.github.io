@@ -1,11 +1,10 @@
 ---
 title: "Doubly Robust Estimators"
-description: "An Exploration of a Double Robust Estimator for Causal Inference"
+description: "An Exploration of a Double Robust Estimator for Causal Inference. This paper was created as a final project for Stat 451: Causal Inference, taught by Leslie Myint."
 date: "2023-04-17"
-
 categories:
-  - Data Science
   - Statistics
+  - Macalester
 about:
   template: marquee
 execute:

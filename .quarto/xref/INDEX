@@ -64,5 +64,11 @@
   },
   "presentation.qmd": {
     "presentation.html": "166a840e"
+  },
+  "projects/correlated/index.qmd": {
+    "index.html": "6c2b4fee"
+  },
+  "projects/correlated/insolation.ipynb": {
+    "insolation.html": "928ca8a0"
   }
 }

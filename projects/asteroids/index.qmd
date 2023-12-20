@@ -1,12 +1,13 @@
 ---
 title: "Asteroid Value Analysis"
-description: "Visualization and Analysis of Asterank data"
+description: "Visualization and Analysis of Asterank data. This paper was created as part of a final project for Stat/Comp 112: Introduction to Data Science taught by Brianna Heggeseth."
 date: "2022-12-14"
 image: KISSconcept.png
 image-alt: concept art of spacecraft and asteroid
 categories:
   - Data Science
   - Space
+  - Macalester
 about:
   template: marquee
   image: KISSconcept.png

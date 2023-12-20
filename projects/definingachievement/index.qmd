@@ -1,11 +1,11 @@
 ---
 title: "Defining Achievement"
-description: "Investigating the Factors that Define Educational Achievement using California as a Case Study"
-date: "2023-04-17"
-
+description: "Investigating the Factors that Define Educational Achievement using California as a Case Study. This site was created as a final project for Stat/Comp 456: Projects in Data Science, taught by Brianna Heggeseth."
+date: "2023-05-03"
 categories:
   - Data Science
   - Education
+  - Macalester
 about:
   template: marquee
 execute:

@@ -1,5 +1,9 @@
 ---
-title: "Modeling Advection Diffusion with Erosion and Depositon"
+title: "Advection Diffusion with Simple Erosion and Deposition"
+description: "A simple mathematical model of nitrogen runoff. This paper was created as part of final project for Math 432: Mathematical Modeling, taught by Will Mitchell."
+categories:
+  - Math
+  - Macalester
 author: "Nathaniel Reimer"
 date: '2023-12-15'
 format: html

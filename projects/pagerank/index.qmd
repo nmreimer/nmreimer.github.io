@@ -1,11 +1,11 @@
 ---
 title: "PageRank"
-description: "Implementing and Exploring a Simplified Version of the PageRank Algorithm"
+description: "Implementing and Exploring a Simplified Version of the PageRank Algorithm. This paper was created as part of a mid-semester project for Math/Comp 365: Computational Linear Algebra, taught by David Shuman"
 date: "2022-04-30"
-
 categories:
   - Data Science
   - Linear Algebra
+  - Macalester
 about:
   template: marquee
 execute:
@@ -16,7 +16,6 @@ execute:
 image: images/pagerank-Aq-v2.png
 format: html
 ---
-<!DOCTYPE html><html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>PageRank with Eigenvectors  cla365 technical report </title>
