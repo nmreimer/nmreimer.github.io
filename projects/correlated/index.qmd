@@ -1,0 +1,778 @@
+---
+title: "A Time Series Approach to Modeling Potential Solar Output"
+description: "We use time-series methods to model Global Horizontal Irradiance (GHI) at the hourly and daily levels. This paper was created as a final project for Stat 452: Correlated Data, taught by Brianna Heggeseth."
+author: "Nathaniel Reimer, Kyle Suelflow"
+date: '2023-12-16'
+categories:
+  - Data Science
+  - Sun
+  - Macalester
+format: 
+  html: 
+    self-contained: true
+execute:
+  freeze: auto
+  echo: false
+  warning: false
+  message: false
+  include: false
+bibliography: Library.bib
+abstract: "Replacing carbon-emitting energy sources with greener alternatives is critical to preventing worst-case climate change scenarios. Solar power is an incredible option. To make the best use of solar power, we need to have a way to model potential solar output over long and short periods. We use time-series methods to model Global Horizontal Irradiance (GHI) at the hourly and daily levels. Using a sine function to model hourly GHI, we find a correlation between data taken less than four hours apart. After removing multiple seasonal relationships in the aggregated daily data, we find a correlation between data two to three days apart. We also show that each location we modeled required unique considerations and approaches."
+---
+
+```{r run cleaning.R}
+source('cleaning.R')
+```
+
+## Introduction
+
+Greenhouse gas emissions have exploded in recent decades, causing substantial damage to the livelihoods of many across the world. One of the main culprits of these emissions is the energy sector. Using non-renewables such as Coal, Oil, and natural gas to create electricity causes carbon and other GHGs to be emitted. To combat this, renewable energy has been brought forward as the leading solution to this crisis. Solar and wind energy, specifically, have the most potential to create lasting change in regards to our energy usage. The reality of this situation has brought us to think about modeling different solar variables. Being able to model Global Horizontal Irradiance, for example, allows places around the globe to gain a better understanding of whether or not they would be suitable for solar energy. Qualitative measures such as economic feasibility, the physical geography of places, and political and regulatory hurdles are other things that places can take into account in order to determine if solar is feasible for them, in addition to considering this analysis [@crook2011; @wild2017; @boland2020; @shahsavari2018]. This leads us into our two research questions:
+
+-   How well can we model Global Horizontal Irradiance using a time series approach for different situations across the world? And,
+-   Are the models we create consistent across the 25 year period (1998-2023) for which we have data from?
+
+### Data Context
+
+This project focuses on Global Horizontal Irradiance (GHI), a measure of the power of the power of sunlight that reaches the horizontal ground [@GHIbackground2012]. GHI can then be used to estimate the output of a hypothetical solar installation placed on the ground. GHI data used in this report is part of a publicly available GHI data set from SolarAnywhere. SolarAnywhere uses data from geosynchronous satellites to estimate GHI rather than measuring it directly with ground stations [@databackground2023]. Their model is calibrated with data from ground stations. Annual data is accurate within $\pm$ 4.2% based on this validation. Errors increase for shorter time periods: monthly data has an RMSE of 3.9% and hourly data has an RMSE of 20.6%.
+
+We focus our analysis on Victoria, Seychelles, with comparisons to Nairobi, Kenya, and Manchester, England. Nairobi and Victoria are at similar latitudes and so receive a similar amount of sun throughout the year but have different climates. Manchester's sunlight is more seasonal because of its latitude and it has a very different climate.
+
+We use daily Solar Insolation data in our analysis of daily GHI. Solar Insolation in our data is the amount of downward solar energy incident at the top of the atmosphere [@insolationdefinition2016]. It varies by latitude and time of year. We generate daily insolation data for each of our selected locations using the Python package climlab [@climlab2022]. The insolation data has units of $\frac{W}{m^2}$ per hour. Hourly GHI data has also has units of $\frac{W}{m^2}$ per hour. The difference is that GHI is measured on the ground and solar insolation is measured at the top of the atmosphere.
+
+## Model Discussion and Justification
+
+### Intra-Day Variation in GHI
+
+To begin, we wanted to model the intra-day variation in GHI across our sites, and across the 25 year period. An overview of the process is as follows: First, we found the best fitting sine curve to model the average GHI by month for a given 5-year period. Next, we extrapolated this curve onto the plot of ALL data points (no longer mean GHI, but GHI). Then, we used a GEE model to model the residuals of our sine curve model, which determined what order AR model to use. We used five different 5-year periods in order to see if there was any changes in our model across time. For the purposes of this explanation, we will show what the process looked like for the years 1998-2002 across each of our three locations.
+
+For the first step of our process, we decided to model GHI throughout a day by using a sine curve. We made this choice based on striking similarities between the shape of our distribution and that of a sine curve. The equation for the sine curve we chose is listed below: $curveFit = \sin(\pi(time - P)/24)$ `time` is an integer measured from 0 to 24, representing an hour of a given day. `P` is a parameter used to phase shift the sine curve left or right. This equation is consistent across all three locations except for `P`. We put the results of `curveFit` into the linear model below: $MeanGHI \sim curveFit*Night*factor(Month)$
+
+where `Month` is a categorical variable for the month of the year and `Night` is an indicator variable that says whether or not it is nighttime, i.e. the GHI is zero. `Night` is coded differently for each location. For the Seychelles, since it's latitude is only 4 degrees south of the equator, it did not have much variation in terms of the length of daylight during a day. As such, `Night` could be thought of as between 8 in the morning and 6 at night. For Nairobi, since it's latitude is very similar to Seychelles', we treated `Night` the same. But, for Manchester, as it's latitude is 53 degrees north of the equator, the length of daytime throughout the year changes drastically. Thus, we changed how we coded `Night`. For Manchester, if the minimimum GHI for a given month at a given hour is 0, meaning that at least once during a month the GHI is zero at that hour, then we treated that hour as Nighttime. You can see the variation, or lack thereof, in GHI during a day for each month below. Nairobi is pretty similar to Seychelles, and thus is not shown.
+
+```{r}
+#| include: true
+groupedDataEngland <- england_data%>%
+  filter(Year < 2003)%>%
+  group_by(Month,`Time (HH:MM)`) %>%
+  mutate(Night = if_else(min(`GHI (W/m^2)`) == 0, 1, 0))%>%
+  group_by(Month, `Time (HH:MM)`, Night)%>%
+  summarize(MeanGHI = mean(`GHI (W/m^2)`)) %>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  ungroup()%>%
+  mutate(xs = sin(pi*(Time-.56)/24))
+
+firstFiveEngland <- england_data%>%
+  filter(Year < 2003)%>%
+  left_join(groupedDataEngland)%>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  mutate(xs = sin(pi*(Time-.56)/24))
+ 
+fit.lm<-lm(`GHI (W/m^2)` ~ xs*Night*factor(Month), data = firstFiveEngland)
+
+firstFivePredictEngland <- firstFiveEngland%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = `GHI (W/m^2)` - prediction)%>%
+   mutate(SQresid = resid^2)
+
+firstFivePredictEngland%>%
+  ggplot(aes(y=`GHI (W/m^2)` , x=Time, color = Month))+
+  scale_color_distiller(palette = "YlOrBr")+
+  geom_point(size = 0.5)+
+  facet_wrap(~Month)+
+  theme_classic()+
+  labs(title = "Manchester, England Intra-Day variation in GHI (W/m^2) by Month", x = "Hour (0-24)")
+
+firstFiveSeychelles <- data%>%
+  filter(Year < 2003)%>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  mutate(Night = if_else(between(Time, 8, 18), 0, 1))%>%
+  mutate(xs = sin(pi*(Time-.74)/24))
+ 
+fit.lm<-lm(`GHI (W/m^2)` ~ xs*Night*factor(Month), data = firstFiveSeychelles)
+
+firstFivePredictSeychelles <- firstFiveSeychelles%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = `GHI (W/m^2)` - prediction)%>%
+   mutate(SQresid = resid^2)
+
+firstFivePredictSeychelles%>%
+  ggplot(aes(y=`GHI (W/m^2)` , x=Time, color = Month))+
+  scale_color_distiller(palette = "YlOrBr")+
+  geom_point(size = 0.5)+
+  facet_wrap(~Month)+
+  theme_classic()+
+  labs(title = "Victoria, Seychelles Intra-Day variation in GHI (W/m^2) by Month", x = "Hour (0-24)")
+```
+
+To determine phase shift parameter for each location, we found the optimal parameter based on the minimum of the sum of the squared residuals.
+
+```{r finding sine parameter Seychelles}
+#| include: true
+groupedDataSeychelles <- data%>%
+  filter(Year < 2003)%>%
+  group_by(Month,`Time (HH:MM)`) %>%
+  summarize(MeanGHI = mean(`GHI (W/m^2)`)) %>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  ungroup()%>%
+  mutate(Night = if_else(between(Time, 8, 18), 0, 1))%>%
+  mutate(xs = sin(pi*(Time-.74)/24))
+
+fit.lm<-lm(MeanGHI ~ xs*Night*factor(Month), data = groupedDataSeychelles)
+
+groupedData2Seychelles <- groupedDataSeychelles%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = MeanGHI - prediction)%>%
+   mutate(SQresid = resid^2)
+
+residSQ <- rep(0,50)
+counter <- 1
+parameter <- rep(0,50)
+
+for (i in seq(.5,1, by = .01)){
+  xs <- sin(pi*(groupedData2Seychelles$Time-i)/24)
+  fit.lm <- lm(groupedData2Seychelles$MeanGHI ~ xs*groupedData2Seychelles$Night*factor(groupedData2Seychelles$Month))
+  residSQ[counter] <- sum(resid(fit.lm)^2)
+  parameter[counter] <- i
+  counter <- counter + 1
+}
+
+leastSQ <- data.frame(parameter, residSQ)
+leastSQ%>%
+  ggplot(aes(x = parameter, y = residSQ))+
+  geom_point()+
+  labs(title = "Finding Optimal Sine Curve Parameter Seychelles, 1998-2002", y = "Sum of Squared Residuals", x = "Sine Curve Parameter")+
+  theme_classic()
+```
+
+```{r finding sine parameter Kenya}
+groupedDataKenya <- kenya_data%>%
+  filter(Year < 2003)%>%
+  group_by(Month,`Time (HH:MM)`) %>%
+  summarize(MeanGHI = mean(`GHI (W/m^2)`)) %>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  ungroup()%>%
+  mutate(Night = if_else(between(Time, 8, 18), 0, 1))%>%
+  mutate(xs = sin(pi*(Time-1.07)/24))
+
+fit.lm<-lm(MeanGHI ~ xs*Night*factor(Month), data = groupedDataKenya)
+
+groupedData2Kenya <- groupedDataKenya%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = MeanGHI - prediction)%>%
+   mutate(SQresid = resid^2)
+
+residSQ <- rep(0,100)
+counter <- 1
+parameter <- rep(0,100)
+
+for (i in seq(.5,1.5, by = .01)){
+  xs <- sin(pi*(groupedData2Kenya$Time-i)/24)
+  fit.lm <- lm(groupedData2Kenya$MeanGHI ~ xs*groupedData2Kenya$Night*factor(groupedData2Kenya$Month))
+  residSQ[counter] <- sum(resid(fit.lm)^2)
+  parameter[counter] <- i
+  counter <- counter + 1
+}
+
+leastSQ <- data.frame(parameter, residSQ)
+leastSQ%>%
+  ggplot(aes(x = parameter, y = residSQ))+
+  geom_point()+
+  theme_classic()+
+  labs(title = "Finding Optimal Sine Curve Parameter Kenya, 1998-2002", y = "Sum of Squared Residuals", x = "Sine Curve Parameter")+
+  theme_classic()
+
+```
+
+```{r}
+groupedDataEngland <- england_data%>%
+  filter(Year < 2003)%>%
+  group_by(Month,`Time (HH:MM)`) %>%
+  mutate(Night = if_else(min(`GHI (W/m^2)`) == 0, 1, 0))%>%
+  group_by(Month, `Time (HH:MM)`, Night)%>%
+  summarize(MeanGHI = mean(`GHI (W/m^2)`)) %>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  ungroup()%>%
+  mutate(xs = sin(pi*(Time-.56)/24))
+ 
+fit.lm<-lm(MeanGHI ~ xs*Night*factor(Month), data = groupedDataEngland)
+
+groupedData2England <- groupedDataEngland%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = MeanGHI - prediction)%>%
+   mutate(SQresid = resid^2)
+
+residSQ <- rep(0,50)
+counter <- 1
+parameter <- rep(0,50)
+
+for (i in seq(.25,.75, by = .01)){
+  xs <- sin(pi*(groupedData2England$Time-i)/24)
+  fit.lm <- lm(groupedData2England$MeanGHI ~ xs*groupedData2England$Night*factor(groupedData2England$Month))
+  residSQ[counter] <- sum(resid(fit.lm)^2)
+  parameter[counter] <- i
+  counter <- counter + 1
+}
+
+leastSQ <- data.frame(parameter, residSQ)
+leastSQ%>%
+  ggplot(aes(x = parameter, y = residSQ))+
+  geom_point()+
+  theme_classic()
+```
+
+Based on this scatterplot, we chose a parameter of 0.74 for Victoria Seychelles. Similar plots were done for Nairobi and Manchester, producing a parameter of 1.07 and 0.56, respectively. Now that we have an optimized sine curve model, we fit the to model GHI against hour within the day.
+
+```{r}
+#| include: true
+firstFiveSeychelles <- data%>%
+  filter(Year < 2003)%>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  mutate(Night = if_else(between(Time, 8, 18), 0, 1))%>%
+  mutate(xs = sin(pi*(Time-.74)/24))
+ 
+fit.lm<-lm(`GHI (W/m^2)` ~ xs*Night*factor(Month), data = firstFiveSeychelles)
+
+firstFivePredictSeychelles <- firstFiveSeychelles%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = `GHI (W/m^2)` - prediction)%>%
+   mutate(SQresid = resid^2)
+
+firstFivePredictSeychelles%>%
+  ggplot(aes(y=`GHI (W/m^2)` , x=Time, color = Month))+
+  scale_color_distiller(palette = "YlOrBr")+
+  geom_point(size = 0.5)+
+  geom_line(aes(y = prediction,group=Month, color = Month))+
+  theme_classic()+
+  labs(title = "Victoria, Seychelles Intra-Day variation in GHI (W/m^2) by Month", x = "Hour (0-24)")
+```
+
+```{r}
+#| include: true
+firstFiveKenya <- kenya_data%>%
+  filter(Year < 2003)%>%
+  left_join(groupedDataKenya)%>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  mutate(Night = if_else(between(Time, 8, 18), 0, 1))%>%
+  mutate(xs = sin(pi*(Time-1.07)/24))
+ 
+fit.lm<-lm(`GHI (W/m^2)` ~ xs*Night*factor(Month), data = firstFiveKenya)
+
+firstFivePredictKenya <- firstFiveKenya%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = `GHI (W/m^2)` - prediction)%>%
+   mutate(SQresid = resid^2)
+
+firstFivePredictKenya%>%
+  ggplot(aes(y=`GHI (W/m^2)` , x=Time, color = Month))+
+  scale_color_distiller(palette = "YlOrBr")+
+  geom_point(size = 0.5)+
+  geom_line(aes(y = prediction,group=Month, color = Month))+
+  theme_classic()+
+  labs(title = "Nairobi, Kenya Intra-Day variation in GHI (W/m^2) by Month", x = "Hour (0-24)")
+```
+
+```{r}
+#| include: true
+firstFiveEngland <- england_data%>%
+  filter(Year < 2003)%>%
+  left_join(groupedDataEngland)%>%
+  mutate(Time = hour(`Time (HH:MM)`))%>%
+  mutate(xs = sin(pi*(Time-.56)/24))
+ 
+fit.lm<-lm(`GHI (W/m^2)` ~ xs*Night*factor(Month), data = firstFiveEngland)
+
+firstFivePredictEngland <- firstFiveEngland%>%
+   ungroup()%>%
+   mutate(prediction =predict(fit.lm))%>%
+   mutate(resid = `GHI (W/m^2)` - prediction)%>%
+   mutate(SQresid = resid^2)
+
+firstFivePredictEngland%>%
+  ggplot(aes(y=`GHI (W/m^2)` , x=Time, color = Month))+
+  scale_color_distiller(palette = "YlOrBr")+
+  geom_point(size = 0.5)+
+  geom_line(aes(y = prediction,group=Month, color = Month))+
+  theme_classic()+
+  labs(title = "Manchester, England Intra-Day variation in GHI (W/m^2) by Month", x = "Hour (0-24)")
+```
+
+Compared to both Victoria and Nairobi, Manchester's plot looks less clean. This is due to the variation in the length of nighttime across each month, as outlined above. Along the same lines, Manchester has a wider distribution due to this variation, with days in the summer months lasting much longer than those in the winter months. Additionally, Manchester's fitted lines are clustered towards the bottom of the distribution, whereas Victoria's and Nairobi's are clustered near the top, indicating the prevalence of low GHI days in Manchester, and high GHI days in Seychelles and Kenya.
+
+```{r}
+#| include: true
+PredictLagsSeychelles<- firstFivePredictSeychelles%>%
+  filter(Night == 0)%>%
+  group_by(Date)%>%
+  mutate(residlag1 = lag(resid,1))%>%
+  mutate(residlag2 = lag(resid,2))%>%
+  mutate(residlag3 = lag(resid,3))%>%
+  mutate(residlag4 = lag(resid,4))%>%
+  mutate(residlag5 = lag(resid,5))%>%
+  mutate(residlag6 = lag(resid,6))%>%
+  mutate(residlag7 = lag(resid,7))%>%
+  mutate(residlag8 = lag(resid,8))%>%
+  mutate(residlag9 = lag(resid,9))%>%
+  mutate(residlag10 = lag(resid,10))
+
+correlation <- rep(0,8)
+numbers <- seq(8)
+
+mod1EX <-geem(resid~ residlag1+ residlag2+ residlag3+ residlag4, data = PredictLagsSeychelles %>% as.data.frame() %>% select(starts_with('resid'),Date) %>% na.omit() , id = Date, corstr = 'independence') #exchangeable working correlation
+for (i in 78:85){
+  correlation[i-77] <- cor(PredictLagsSeychelles[[i]], PredictLagsSeychelles$resid, use = "complete.obs")
+}
+corDF <- data.frame(numbers, correlation)
+
+corDF%>%ggplot(aes(x = numbers, y = correlation))+
+  geom_point()+
+  ylim(0,0.7) +
+  theme_classic()+
+  labs(title = "Correlation Between the Residuals and Lags of Residuals in Victoria, Seychelles", subtitle = "Residuals of Sine Curve Model", x = "Lag", y = "Correlation")
+
+
+PredictLagsSeychelles%>%
+  ggplot(aes(x = residlag1, y = resid, color = factor(Month)))+
+  geom_point()+
+  theme_classic()+
+  labs(title = "Lag 1 vs Residuals to Determine Correlation in Victoria, Seychelles", x = "Lag 1 of Residuals", y = "Residuals", subtitle = "Residuals of Sine Curve Model")
+    
+
+PredictLagsSeychelles%>%
+    ggplot(aes(x = residlag4, y = resid, color = factor(Month)))+
+    geom_point()+
+    theme_classic()+
+  labs(title = "Lag 4 vs Residuals to Determine Correlation in Victoria, Seychelles", x = "Lag 4 of Residuals", y = "Residuals", subtitle = "Residuals of Sine Curve Model")
+```
+
+```{r}
+PredictLagsKenya<- firstFivePredictKenya%>%
+  filter(Night == 0)%>%
+  group_by(Date)%>%
+  mutate(residlag1 = lag(resid,1))%>%
+  mutate(residlag2 = lag(resid,2))%>%
+  mutate(residlag3 = lag(resid,3))%>%
+  mutate(residlag4 = lag(resid,4))%>%
+  mutate(residlag5 = lag(resid,5))%>%
+  mutate(residlag6 = lag(resid,6))%>%
+  mutate(residlag7 = lag(resid,7))%>%
+  mutate(residlag8 = lag(resid,8))%>%
+  mutate(residlag9 = lag(resid,9))%>%
+  mutate(residlag10 = lag(resid,10))
+
+correlation <- rep(0,8)
+numbers <- seq(8)
+
+mod1EX <-geem(resid~ residlag1+ residlag2+ residlag3+ residlag4, data = PredictLagsKenya %>% as.data.frame() %>% select(starts_with('resid'),Date) %>% na.omit() , id = Date, corstr = 'independence') #exchangeable working correlation
+for (i in 78:85){
+  correlation[i-77] <- cor(PredictLagsKenya[[i]], PredictLagsKenya$resid, use = "complete.obs")
+}
+corDF <- data.frame(numbers, correlation)
+
+corDF%>%ggplot(aes(x = numbers, y = correlation))+
+  geom_point()+
+  theme_classic()+
+  labs(title = "Correlation Between the Residuals and Lags of Residuals in Nairobi, Kenya", subtitle = "Residuals of Sine Curve Model", x = "Lag", y = "Correlation")
+
+PredictLagsKenya%>%
+  ggplot(aes(x = residlag1, y = resid, color = factor(Month)))+
+  geom_point()+
+  theme_classic()+
+  labs(title = "Lag 1 of Residuals vs Residuals to Determine Correlation in Nairobi, Kenya", x = "Lag 1 of Residuals", y = "Residuals", subtitle = "Residuals of Sine Curve Model")
+    
+
+PredictLagsKenya%>%
+    ggplot(aes(x = residlag4, y = resid, color = factor(Month)))+
+    geom_point()+
+    theme_classic()+
+  labs(title = "Lag 4 of Residuals vs Residuals to Determine Correlation in Nairobi, Kenya", x = "Lag 4 of Residuals", y = "Residuals", subtitle = "Residuals of Sine Curve Model")
+```
+
+```{r}
+PredictLagsEngland<- firstFivePredictEngland%>%
+  filter(Night == 0)%>%
+  group_by(Date)%>%
+  mutate(residlag1 = lag(resid,1))%>%
+  mutate(residlag2 = lag(resid,2))%>%
+  mutate(residlag3 = lag(resid,3))%>%
+  mutate(residlag4 = lag(resid,4))%>%
+  mutate(residlag5 = lag(resid,5))%>%
+  mutate(residlag6 = lag(resid,6))%>%
+  mutate(residlag7 = lag(resid,7))%>%
+  mutate(residlag8 = lag(resid,8))%>%
+  mutate(residlag9 = lag(resid,9))%>%
+  mutate(residlag10 = lag(resid,10))
+
+correlation <- rep(0,8)
+numbers <- seq(8)
+
+mod1EX <-geem(resid~ residlag1+ residlag2+ residlag3+ residlag4, data = PredictLagsEngland %>% as.data.frame() %>% select(starts_with('resid'),Date) %>% na.omit() , id = Date, corstr = 'independence') #exchangeable working correlation
+
+for (i in 78:85){
+  correlation[i-77] <- cor(PredictLagsEngland[[i]], PredictLagsEngland$resid, use = "complete.obs")
+}
+corDF <- data.frame(numbers, correlation)
+
+corDF%>%ggplot(aes(x = numbers, y = correlation))+
+  geom_point()+
+  theme_classic()+
+  labs(title = "Correlation Between the Residuals and Lags of Residuals in Manchester, England", subtitle = "Residuals of Sine Curve Model", x = "Lag", y = "Correlation")
+
+PredictLagsEngland%>%
+  ggplot(aes(x = residlag1, y = resid, color = factor(Month)))+
+  geom_point()+
+  theme_classic()+
+  labs(title = "Lag 1 of Residuals vs Residuals to Determine Correlation in Manchester, England", x = "Lag 1 of Residuals", y = "Residuals", subtitle = "Residuals of Sine Curve Model")
+    
+
+PredictLagsEngland%>%
+    ggplot(aes(x = residlag4, y = resid, color = factor(Month)))+
+    geom_point()+
+    theme_classic()+
+  labs(title = "Lag 4 of Residuals vs Residuals to Determine Correlation in Manchester, England", x = "Lag 4 of Residuals", y = "Residuals", subtitle = "Residuals of Sine Curve Model")
+```
+
+The final step in using a time series approach to model the intra-day variation in GHI is to model the correlation between neighboring hours in the day. We do that by looking at the distribution of our residuals from our model, which is basically subtracting our model predictions from the actual values. The next step is to use tools like an autocorrelation function (ACF) and a partial autocorrelation function (PACF) to figure out at what lag does the correlation between a given data point and the lag X (X being what we are trying to find) of that data point drop to 0. This could help us choose the order of an autoregressive or moving average model.
+
+Suppose in our PACF we saw correlation drop to 0 at lag 3. Then, we would be inclined to use an autoregressive model (AR), with an order of 3. We, however, could not use these methods in order to determine what order AR or MA (moving average) model to use because of the amount of zeros during the nighttime in our data.
+
+Therefore, we use a longitudinal model called GEE to fit an autoregressive model. After running the GEE model with a max of 8 lags as explanatory variables, and the residuals as the response variable, only the first 4 lags were significant. That is why we used the GEE model; it allowed us to determine which lags were significant in predicting the residual, the data point that the lag is connected too. In essence, it is similar to the PACF as we condition on the intervening lags. Whichever lag is no longer significant is the same as "dropping to 0" in a PACF. To contextualize this a bit, this is saying that, if it is 1 in the afternoon, the GHI at 9 in the morning helps to explain some of the GHI at 1. But, the GHI at 8 in the morning doesn't quite explain enough of the GHI at 1 for it to be significant enought to include in our model. From this, an AR(4) model was determined to be the most optimal for our data. Interestingly, these conclusions are similar across both Manchester, Nairobi, and Victoria.
+
+All the plots above were done on the first 5 years of data, from 1998-2002. We did this same process outlined above for each 5 year segment, for a total of 5 times. The sine curve parameter is the only difference between models across each 5 year period. Shown below is a plot of change in the sine curve parameter over time, setting the 1998-2002 parameter as a benchmark.
+
+```{r}
+#| include: true
+Years <- c("1998 - 2002", "2003 - 2007", "2008 - 2012", "2013 - 2017", "2018 - 2023", "1998 - 2002", "2003 - 2007", "2008 - 2012", "2013 - 2017", "2018 - 2023", "1998 - 2002", "2003 - 2007", "2008 - 2012", "2013 - 2017", "2018 - 2023")
+SineParameter <- c(0,.07,.06,.05,.05,0,0,.01,.02,.07,0,.01,-.01,0,.04)
+Country <- c(rep("Manchester, England", 5), rep("Nairobi, Kenya", 5), rep("Victoria, Seychelles", 5))
+sineparamCompare <- data.frame(Years, SineParameter, Country)
+
+sineparamCompare%>%
+  ggplot(aes(x = Years, y = SineParameter, group = Country))+
+  geom_line(aes(color = Country))+
+  geom_point()+
+  theme_classic()+
+  labs(title = "How has the Phase of the Sine Curve Shifted in the Last 25 Years?", y = "Sine Parameter Difference", subtitle = "Each data point is compared to its benchmark sine parameter for the years 1998-2002")
+```
+
+Interestingly, the phase shift parameter consistently increased from 1998 to 2023 across all 3 locations. Remember that this parameter deals with the shifting of the sine curve left or right, changing when the peak of the curve happens in a day. The increase in parameter means that, from 1998 to 2023, our models' predicted peak of GHI happened later in the day compared to the 5 year period of 1998 to 2002. This is an interesting observation, because one might think it be possible for the amplitude of the sine curve to increase over time, maybe due to climate change, but where the peak amount of GHI is during the day should fairly stay the same across time.
+
+Now that we have modeled the intra-day variation in GHI, we next need to explore the seasonal variation in GHI. How does GHI change throughout a year?
+
+### Seasonal Variation in Daily GHI
+
+```{r daily modeling set up}
+require(splines)
+```
+
+Daily GHI data for the Seychelles has multiple sources of seasonality. The maximum solar energy available changes in a regular pattern because of the rotation of the earth. Seasonal weather patterns influence the amount of solar energy reaching the ground (which is available to solar power installations). Since we have solar insolation data the seasonality in the maximum energy available is easy to account for. If we model the maximum GHI for each day of the year based on solar insolation alone we get a reasonable estimate of maximum GHI.
+
+```{r seychelles ghi }
+#| fig-align: center
+#| fig-width: 8
+#| include: true
+
+A <- daily_data %>% 
+  group_by(yday(Date)) %>%
+  summarise(
+    average_insolation = 24*first(average_insolation, -GHI_sum),
+    GHI_sum = first(GHI_sum, -GHI_sum)
+  )
+
+modA <- lm(GHI_sum ~ average_insolation, data = A)
+
+daily_data  %>%
+ggplot(aes(x=date(Year_Day), y=GHI_sum)) + 
+  # geom_point(alpha = .05) +
+  geom_boxplot(aes(group = week(Date)), alpha = .15) +
+  geom_line(aes(y=(average_insolation*24)*modA$coefficients[2]), color = "red") + 
+  theme_minimal() + 
+  labs(x = "", 
+       y = "Total GHI per Day (Wm^-2)",
+       title = "Seasonality in Maximum GHI") +
+  scale_x_date(date_labels = "%b") +
+  facet_wrap(~Place) # this is on purpose for the label
+```
+
+```{r}
+sey_trendmod <- glm(notlost ~ decimalDate, data = daily_data)
+# sey_trendmod %>% summary()
+eng_trendmod <- glm(notlost ~ decimalDate, data = daily_england_data) 
+# eng_trendmod %>% summary()
+ken_trendmod <- glm(notlost ~ decimalDate, data = daily_kenya_data) 
+# ken_trendmod %>% summary()
+```
+
+To deal with the first source of seasonality we change our approach. Instead of modeling GHI, we examine the fraction of energy that reaches the ground using the equation:
+
+$$
+\text{Fraction of energy reaching ground} = 1 - \frac{\text{Solar Insolation per Day} - \text{GHI per Day}}{\text{Solar Insolation per Day}}
+$$
+
+We can now see the effect of seasonal weather patterns more easily. On average, in clear skies, over the entire earth, the atmosphere reflects about 30% of incoming solar energy back into space [@rhodes2010]. In the graph, we can see that the maximum fraction of solar energy that reaches the ground is about 70%. Most days are not perfectly clear though so typically less than 70% of the energy reaches the surface.
+
+We estimated the overall trend in the fraction of energy reaching the surface for each location. Each year we expect the fraction of energy reaching the ground to fall by 0.00173 and 0.00168 percentage points in Victoria and Nairobi, respectively, but rise by 0.0008 percentage points in Manchester. Solar insolation does not change significantly over these time frames so the trend we observe is likely a result of climate change and weather.
+
+The seasonality not explained by the seasonality of insolation can also be explained by climate and weather: Seychelles receives the most precipitation in January and December, with relatively dry summers [@worldbankclimate]. We decided to model this using a spline with two knots placed to roughly line up with the seasons, this is plotted in blue below. We add this model to the existing trend model.
+
+```{r all energy fraction}
+#| fig-align: center
+#| fig-width: 8
+#| include: true
+
+rbind(daily_data, daily_england_data, daily_kenya_data) %>% 
+  ggplot(aes(x=date(Year_Day), y=notlost)) +
+  # geom_point(alpha = .025) +
+  geom_boxplot(aes(group = week(Date)), alpha = .15) +
+  geom_smooth(formula = y ~ bs(x, degree = 2, knots = c(date("0-04-01"), date("0-10-01"))), data = daily_england_data) + 
+  geom_smooth(formula = y ~ bs(x, degree = 2, knots = c(date("0-06-01"), date("0-09-01"))), data = daily_kenya_data) +
+  geom_smooth(formula = y ~ bs(x, degree = 2, knots = c(date("0-03-01"), date("0-10-01"))), data = daily_data) +
+  theme_minimal() + 
+  labs(x = "", 
+       y = "Fraction of Solar Energy Reaching the Ground",
+       title = "Differing Seasonality at Each Location") +
+  scale_x_date(date_labels = "%b") + 
+  scale_y_continuous(breaks = c(0,.1,.2,.3,.4,.5,.6,.7,.8), limits = c(0,.8)) +
+  geom_hline(yintercept = .7, color = "red") +
+  facet_wrap(~Place, nrow = 1)
+```
+
+Manchester also sees rainy winters and so exhibits a similar seasonality [@worldbankclimate]. In Nairobi, the seasonality is not associated with precipitation but rather with low clouds that are present in June, July, and August [@nairobi]. This background on the seasons informs our placement of knots for a spline model plotted in blue. The residuals of this approach have significant relationships with humidity, suggesting we should add humidity to our model.
+
+```{r seasonal modeling}
+sey_mod1 <- glm(notlost ~ bs(YDay, degree = 2, knots = c(yday(date("0-03-01")), yday(date("0-10-01")))) + decimalDate, data = daily_data)
+eng_mod1 <- glm(notlost ~ bs(YDay, degree = 2, knots = c(yday(date("0-04-01")), yday(date("0-10-01")))) + decimalDate, data = daily_england_data)
+ken_mod1 <- glm(notlost ~ bs(YDay, degree = 2, knots = c(yday(date("0-06-01")), yday(date("0-09-01")))) + decimalDate, data = daily_kenya_data)
+
+# sey_mod1 %>% summary()
+# eng_mod1 %>% summary()
+# ken_mod1 %>% summary()
+```
+
+Average daily relative humidity lets us model more of the relationship between weather and the energy reaching the ground. Humidity impacts the clear sky GHI (the GHI if there were no clouds) and can give us some sense of cloud cover since the data lacks any direct measure of cloud cover. We incorporate humidity into the three seasonal models as a degree 1 spline with a single knot. This reflects the observation that the unexplained relationship with humidity is relatively flat at lower humidity but is more negative at higher humidity. Kenya and England have their knots at a relative humidity of 60%, the Seychelles has its at 75%. This greatly reduces or eliminates the relationship between the model residuals and humidity.
+
+```{r seasonal residuals}
+#| fig-align: center
+#| fig-width: 8
+#| include: true
+
+daily_data <- daily_data %>% mutate(residual1 = notlost - predict(sey_mod1))
+daily_england_data <- daily_england_data %>% mutate(residual1 = notlost - predict(eng_mod1))
+daily_kenya_data <- daily_kenya_data %>% mutate(residual1 = notlost - predict(ken_mod1))
+
+rbind(daily_kenya_data, daily_england_data, daily_data) %>%
+  ggplot(aes(x=RHum_mean, y= residual1)) + 
+  geom_boxplot(aes(x=RHum_mean%/%1, group = RHum_mean%/%1), alpha = .15) +
+  # geom_point(alpha = .015) +
+  geom_hline(yintercept = 0) +
+  geom_smooth(method = "lm", data = daily_data, formula = y ~ bs(x, degree = 1, knots = c(75))) + 
+  geom_smooth(method = "lm", data = daily_england_data, formula = y ~ bs(x, degree = 1, knots = c(60))) + 
+  geom_smooth(method = "lm", data = daily_kenya_data, formula = y ~ bs(x, degree = 1, knots = (60))) + 
+  scale_y_continuous(breaks = c(-.5,-.4,-.3,-.2,-.1,0,.1,.2,.3,.4,.5), limits = c(-.5,.5)) +
+  labs(x = "Relative Humidity (%)", 
+       y = "Residual of Seasonal Model",
+       title = "Differing Relationships with Humidity",
+       caption = "After applying the seasonal model the residual relationship with humidity depends on location.") +
+  theme_minimal() +
+  facet_wrap(~Place)
+  
+```
+
+```{r seasonal and humidity modeling and residuals}
+#| include: false
+# do not include
+sey_mod2 <- glm(notlost ~ bs(YDay, degree = 2, knots = c(yday(date("0-03-01")), yday(date("0-10-01")))) + decimalDate + bs(RHum_mean, degree = 1, knots = c(75)), data = daily_data)
+
+eng_mod2 <- glm(notlost ~ bs(YDay, degree = 2, knots = c(yday(date("0-04-01")), yday(date("0-10-01")))) + decimalDate + bs(RHum_mean, degree = 1, knots = c(60)), data = daily_england_data)
+
+ken_mod2 <- glm(notlost ~ bs(YDay, degree = 2, knots = c(yday(date("0-06-01")), yday(date("0-09-01")))) + decimalDate + bs(RHum_mean, degree = 1, knots = c(60)), data = daily_kenya_data)
+
+
+# sey_mod2 %>% summary()
+# eng_mod2 %>% summary()
+# ken_mod2 %>% summary()
+
+daily_data <- daily_data %>% mutate(residual2 = notlost - predict(sey_mod2))
+daily_england_data <- daily_england_data %>% mutate(residual2 = notlost - predict(eng_mod2))
+daily_kenya_data <- daily_kenya_data %>% mutate(residual2 = notlost - predict(ken_mod2))
+```
+
+```{r ???}
+# do not include
+sey_trendmod$coefficients[2] - sey_mod2$coefficients[6]
+ken_trendmod$coefficients[2] - ken_mod2$coefficients[6]
+eng_trendmod$coefficients[2] - eng_mod2$coefficients[6]
+
+rbind(daily_data, daily_england_data, daily_kenya_data) %>% 
+  ggplot(aes(x=decimalDate, y=residual2)) +
+  geom_boxplot(aes(x=decimalDate %/% 1, group = decimalDate %/% 1), alpha = .15) +
+  # geom_point(alpha = .025) +
+  geom_smooth() +
+  theme_minimal() + 
+  labs(x = "", 
+       y = "Fraction of Solar Energy Reaching the Ground",
+       title = "Solar Energy Reaching Ground Over Time") +
+  facet_wrap(~Place, nrow = 1)
+```
+
+If we examine just a short period in the Seychelles, the first 2 months of 2002, it appears that many of the shorter-term fluctuations in GHI are still present after modeling. These fluctuations seem to be about 2-4 days long which is why the AR models with order 2-4 performed well on various error metrics.
+
+```{r}
+#| fig-align: center
+#| fig-width: 4
+#| fig-height: 2
+#| layout-ncol: 2
+#| include: true
+start <- "2002-01-01"
+end <- "2002-02-28"
+daily_data %>% filter(Date > start) %>% 
+  filter(Date < end) %>% 
+  ggplot(aes(x=Date)) +
+  geom_line(aes(y = GHI_sum)) +
+  theme_minimal() +
+  labs(y = "Total GHI per Day (Wm^-2)", title = "Original Data", x = "")
+
+daily_data %>% filter(Date > start) %>% 
+  filter(Date < end) %>% 
+  ggplot(aes(x=Date)) +
+  geom_line(aes(y = residual2)) +
+  theme_minimal() +
+  scale_y_continuous(limits = c(-.4,.4)) +
+  labs(y = "", title = "Residuals", x = "") +
+  geom_hline(yintercept = 0, color = "blue")
+```
+
+```{r}
+#| include: false
+eng_acf <- astsa::acf2(daily_england_data$residual2)
+eng_acf <- as.data.frame(cbind(Lag = seq(1,105), (t(eng_acf)))) %>% mutate(Place = rep(daily_england_data$Place[1],105))
+
+sey_acf <- astsa::acf2(daily_data$residual2)
+sey_acf <- as.data.frame(cbind(Lag = seq(1,105), (t(sey_acf)))) %>% mutate(Place = rep(daily_data$Place[1],105))
+
+ken_acf <- astsa::acf2(daily_kenya_data$residual2)
+ken_acf <- as.data.frame(cbind(Lag = seq(1,105), (t(ken_acf)))) %>% mutate(Place = rep(daily_kenya_data$Place[1],105))
+
+eng_ar3ma0 <- (astsa::sarima(daily_england_data$residual2, 3, 0, 0)) # also close
+eng_ar4ma0 <- (astsa::sarima(daily_england_data$residual2, 4, 0, 0)) # very close
+# ar4ma1 <- (astsa::sarima(daily_england_data$residual2, 4, 0, 1))
+eng_ar3ma1 <- (astsa::sarima(daily_england_data$residual2, 3, 0, 1)) # good AIC and passable box statistic thing
+# ar3ma2 <- (astsa::sarima(daily_england_data$residual2, 3, 0, 2))
+
+astsa::sarima(daily_data$residual2, 3, 0, 0)
+# ar0ma4 <- (astsa::sarima(daily_data$residual2, 0, 0, 4))$AIC
+# ar1ma3 <- (astsa::sarima(daily_data$residual2, 1, 0, 3))$AIC
+# ar2ma3 <- (astsa::sarima(daily_data$residual2, 2, 0, 3))$AIC
+# ar2ma2 <- (astsa::sarima(daily_data$residual2, 2, 0, 2))$AIC
+sey_ar3ma0 <- (astsa::sarima(daily_data$residual2, 3, 0, 0)) # very close better significance
+sey_ar2ma1 <- (astsa::sarima(daily_data$residual2, 2, 0, 1)) # best AIC and passable box thing, all terms significant
+# ar3ma1 <- (astsa::sarima(daily_data$residual2, 3, 0, 1))
+# ar3ma2 <- (astsa::sarima(daily_data$residual2, 3, 0, 2))$AIC
+
+ken_ar3ma0 <- (astsa::sarima(daily_kenya_data$residual2, 3, 0, 0)) # close
+# ar2ma0 <- (astsa::sarima(daily_kenya_data$residual2, 2, 0, 0))$AIC
+# ken_ar4ma1 <- (astsa::sarima(daily_kenya_data$residual2, 4, 0, 1)) 
+ken_ar3ma1 <- (astsa::sarima(daily_kenya_data$residual2, 3, 0, 1)) # best AIC and passable box thing, very close to ar3ma2, all terms significant
+# ar3ma2 <- (astsa::sarima(daily_kenya_data$residual2, 3, 0, 2))$AIC
+```
+
+The errors of the combined model with seasonality, humidity, and the overall trend are not white noise, so we attempt to model them. The ACF plot tells us the correlation between errors that are a specific number of lags (measured in days) apart. The ACF decreases as the lags increase. This makes sense because the farther away two points are from one another in time, the weaker the correlation between those two values will be. The PACF plot tells us the correlation between errors and a specific number of lags apart after accounting for the correlation between shorter lags. Values within the dashed lines indicate independent white noise.
+
+```{r}
+#| fig-align: center
+#| fig-width: 8
+#| include: true
+
+sey_acf %>% pivot_longer(cols = c(ACF,PACF)) %>%
+  ggplot(aes(x=Lag, y=value)) +
+  geom_col(width = .3) +
+  geom_hline(yintercept = 1.96/sqrt(nrow(daily_data)), linetype = "dashed") + 
+  geom_hline(yintercept = -1.96/sqrt(nrow(daily_data)), linetype = "dashed") +
+  theme_minimal() +
+  labs(y = "Value", 
+       x = "Lag",
+       title = "ACF and PACF of residuals") +
+  facet_grid(rows = vars(name), cols = vars(Place))
+```
+
+We come up with five candidate models after looking at the ACF and PACF: an AR3 model, an AR2 model, an AR2MA1 model, an AR3MA1 model, and an AR3MA2 model. These choices are primarily based on the slower decay of the ACF and the PACF being within the dashed lines after 3 lags. Of these, the AR2MA1 model performs the best as measured by AIC (A goodness of fit measure with a penalty for model terms). The Ljung-Box statistic has large p-values, so we fail to reject the null hypothesis that the residuals are independent There is no proof of serial correlation after fitting the model. The AR3 model performed very similarly on all metrics but has slightly worse fit as measured by AIC.
+
+This procedure is repeated for Manchester and Nairobi with similar results. Using the same criteria as above we settle on an AR3MA1 model for Manchester and England. In England, the AR4 and AR3 models performed well. In Kenya, the AR3 model also performed well. The actual effects of these models are very slight, but they do handle the correlation present.
+
+```{r}
+#| fig-align: center
+#| fig-width: 8
+#| include: true
+
+face_labs <- c("Date", "Day of Year", "Total GHI per Day (Wm^-2)","Average Daily Humidity (%)")
+names(face_labs) <- c("decimalDate", "YDay", "GHI_sum", "RHum_mean")
+
+daily_data %>% 
+  mutate(residual3 = sey_ar2ma1$fit$residuals) %>%
+  pivot_longer(cols = c(decimalDate, YDay, GHI_sum, RHum_mean)) %>%
+  ggplot(aes(x = value, y = residual3)) +
+  geom_point(size = .5, alpha = .5) +
+  geom_smooth(color = "red") +
+  theme_minimal() +
+  scale_y_continuous(limits = c(-.5,.5)) +
+  geom_hline(yintercept = 0, color = "blue") +
+  labs(x = "", 
+       y = "Residual", 
+       title = "Visualization of Model Residuals with Different Variables",
+       subtitle = "Victoria, Seychelles") +
+  facet_grid(cols = vars(name), scales = "free_x", labeller = labeller(name = face_labs), switch = "x") +
+  theme(axis.text.x = element_text(angle=0, vjust=14),
+        strip.text.x = element_text(angle=0, vjust=-1.5)) # this feels like a crime
+```
+
+The Seychelles model residuals have a reasonably insignificant relationship with date, day of year, and humidity. The strong positive relationship between daily GHI and the residual suggests a major issue with the model: we underpredict the fraction of sun reaching the ground on days with higher total GHI and overpredict on days with lower total GHI.
+
+Forecasting with this complete model is not possible without a provided forecast for humidity since we relied on having a known humidity value when creating the model.
+
+```{r}
+#| include: false
+#| eval: false
+newdat = data.frame(Date = (daily_data[8500,]$Date) + days(1:518)) %>% mutate(YDay = yday(Date),
+                                                                        decimalDate = decimal_date(Date))
+
+NewX = model.matrix(~ bs(YDay, degree = 2, knots = c(yday(date("0-03-01")), yday(date("0-10-01")))) + decimalDate, data = newdat)[,-1]
+
+X = model.matrix(notlost ~ bs(YDay, degree = 2, knots = c(yday(date("0-03-01")), yday(date("0-10-01")))) + decimalDate, data = daily_data)[,-1]
+
+
+prediction <- astsa::sarima.for(daily_data$notlost, n.ahead = 518, p = 3, d = 0, q = 0, P = 0, D = 0, Q = 0, xreg = X, newxreg = NewX)
+
+b <- daily_data %>% select(notlost) %>% as.matrix()
+realdata <- data.frame(cbind(date = seq(1,8500), notlost = b[1:8500], se = 0))
+fakedata <- data.frame(date=time(prediction$pred), notlost=as.matrix(prediction$pred), se = as.matrix(prediction$se))
+
+realdata <- realdata %>% add_column(date1 = daily_data$Date[1:8500])
+fakedata <- fakedata %>% add_column(date1 = daily_data$Date[8500] + days(1:518))
+
+ggplot() + 
+  geom_line(aes(x=Date, y=notlost), data = daily_data) +
+  geom_line(aes(x=date(date1), y=notlost), data = fakedata, color = "red") + 
+  geom_ribbon(aes(x=date(date1), ymin = notlost - 2*se, ymax = notlost + 2*se), data = fakedata, alpha = .2, color = "red", linewidth = .1, fill="red") +
+  scale_x_date(breaks = scales::breaks_pretty(20), limits =  c(date("2021-01-01"), date("2023-11-16"))) + 
+  theme_minimal()
+```
+
+## Discussion and Conclusions
+
+Researchers have explored many different ways to model GHI. These methods come down to ways to model weather and cloud cover. Researchers have used an autoregressive spatio-temporal model to model GHI in the short term [@dambreville2014]. The forecasts resulting from that model were just 15 minutes to 1 hour. @yang2015 uses exponential smoothing to predict cloud cover and, therefore, GHI. Aside from time series and spatial approaches, neural networks have proven quite successful at accounting for the highly complex relationships that impact GHI. @zang2020 combine two types of neural networks for spatio-temporal predictions. This, of course, sacrifices interpretability.
+
+Using a sine curve to model intra-day changes in GHI is a different approach than those outlined above, and given the tools at our disposal, a good approach. The sine curve provided a unique way to capture the distribution of GHI during a day, and did quite well given the almost simplistic nature of it. The most challenging aspect of the intraday GHI was handling when it was nighttime. As discussed above, this involved different approaches to determine what it meant to be nighttime, but more importantly, proved challenging in uses traditional time series techniques to remove trend and model the errors. Nairobi and Victoria both lie on roughly the same latitude, yet the rank of the monthly sine curves (which month had the highest amplitude) was quite different when comparing the two. This indicates that weather patterns are significantly different for Nairobi and Victoria, as well as that there isn't a whole lot of noticeable difference between months, leading to the rank of each month to be different than what we would expect given a traditional seasonal approach. Unsurprisingly, Manchester's GHI was significantly lower than both Victoria's and Nairobi's. In the winter months of December and Janurary, the amplitude of the curve was significantly lower than the corresponding "winter" months for Victoria and Nairobi.
+
+Our approach to modeling the daily sunlight highlights the incredible variation between different locations and the difficulty of accurately forecasting weather conditions. When first converting from GHI to our metric, the fraction of sunlight reaching the ground, each location was at a different latitude and required a different set of solar insolation data. This solar insolation data simplifies the modeling process but there was still a lot to model. The overall trend in the fraction of sunlight reaching the ground, which has been roughly linear, is also different for each of the three locations. Each location experienced different climate and yearly weather patterns and required separate spline models for the time of year. Even the relationship between relative humidity and the fraction of sunlight reaching the ground was unique between the locations. Residuals after all this modeling showed correlation for data 2 to 4 days apart. That is just a result of how the weather tends to work from day to day. Each of the locations showed relatively similar results for this part of the modeling.
+
+The overall trend we saw in daily sunlight in the Seychelles could be a part of general trends in cloud cover in the Area. @sharma2023 shows that cloud cover in the Arabian Sea (north of the Seychelles) has started to increase and predicts that it will continue to increase as climate change continues. These results are not generalizable as they find the opposite trend in the South-East Indian Ocean.
+
+Overall, the model performed poorly. Lacking a solid proxy for cloud cover in the data, we had little way to predict the day-to-day changes in cloud cover. Of course, modeling would be very straightforward if we had a measure of cloud cover. The fraction of sunlight reaching the ground is directly linked to cloud cover. That would also force us to rely on some outside cloud cover forecast if we wanted to do any forecasting. In existing work, spatial data and spatial models play a critical role. Weather is notoriously difficult to predict and this difficulty is amplified when the data you have is for single locations hundreds of miles apart.
+
+## References
